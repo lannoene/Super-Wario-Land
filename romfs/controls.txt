@@ -1,0 +1,10 @@
+controls:
+ - press x to jump
+ - press z to shoulder bash (not implimented yet)
+ - arrows to move
+ - down arrow to groundpound (not implimented yet)
+making:
+ - levels will be built in 50x50px tiles
+ - there may be loading zones to different screens (which will come much later)
+ - doors & stuff as well
+ - also enimies (they can just walk back & forth)

@@ -1,0 +1,7 @@
+todo: (do top first)
+ - doors
+ - horizontal scroll blocking tiles
+ - sound
+ - tooltips (hover over blocks)
+
+do union for properties and you can have variables called different things depending on the tile

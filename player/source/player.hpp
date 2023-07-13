@@ -40,6 +40,7 @@ private:
 	int playerCheckVertBoundries(float your_x, float your_y, float your_width, float your_height);
 	int playerCheckHorizBoundries(float your_x, float your_y, float your_width, float your_height, bool mustColide);
 	void collectCoin(int amount);
+	void bruh(SDL_Audio &Audio);
 };
 
 enum states {

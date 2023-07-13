@@ -90,7 +90,7 @@ bool drawGame(SDL_Screen &Scene, SDL_Audio &Audio) {
 	wario.update(Audio);
 	wario.draw(Scene, gameFrame);
 	
-	Scene.drawRectangle(0, 0, 150, 30);
+	Scene.drawRectangle(0, 0, 150, 30, CLR_WHT);
 	
 	char buffer[50];
 	snprintf(buffer, 50, "Coins: %d", wario.getCoinCount());

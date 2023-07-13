@@ -6,3 +6,9 @@
 #include "audio.hpp"
 
 void pauseScreen(SDL_Screen &Scene, SDL_Audio &Audio);
+
+enum BUTTON_IDS {
+	NO_BUTTON = 0,
+	SLIDER_SFX,
+	SLIDER_MUS,
+};

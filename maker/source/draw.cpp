@@ -41,6 +41,15 @@ SDL_Screen::SDL_Screen() {
 	loadTexture((char*)"romfs/misc/spawn_point.png");
 	loadTexture((char*)"romfs/texture/grass/level_ground_dirt_bg_tile.png");
 	loadTexture((char*)"romfs/texture/grass/level_ground_dirt_bg_tile_shadow.png");
+	loadTexture((char*)"romfs/texture/grass/level_ground_dirt_semisol_platform.png");
+	loadTexture((char*)"romfs/texture/grass/level_ground_log_middle_left.png");
+	loadTexture((char*)"romfs/texture/grass/level_ground_log_middle_kinda_left.png");
+	loadTexture((char*)"romfs/texture/grass/level_ground_log_middle_kinda_right.png");
+	loadTexture((char*)"romfs/texture/grass/level_ground_log_middle_right.png");
+	loadTexture((char*)"romfs/texture/grass/level_ground_log_bottom_left.png");
+	loadTexture((char*)"romfs/texture/grass/level_ground_log_bottom_kinda_left.png");
+	loadTexture((char*)"romfs/texture/grass/level_ground_log_bottom_kinda_right.png");
+	loadTexture((char*)"romfs/texture/grass/level_ground_log_bottom_right.png");
 }
 
 SDL_Screen::~SDL_Screen() {

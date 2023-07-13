@@ -42,6 +42,15 @@ SDL_Screen::SDL_Screen() {
 	loadTexture((char*)"romfs/sprite/wario_player_walk2.png");
 	loadTexture((char*)"romfs/sprite/wario_player_walk3.png");
 	loadTexture((char*)"romfs/sprite/wario_player_walk4.png");
+	loadTexture((char*)"romfs/texture/grass/level_ground_dirt_semisol_platform.png");
+	loadTexture((char*)"romfs/texture/grass/level_ground_log_middle_left.png");
+	loadTexture((char*)"romfs/texture/grass/level_ground_log_middle_kinda_left.png");
+	loadTexture((char*)"romfs/texture/grass/level_ground_log_middle_kinda_right.png");
+	loadTexture((char*)"romfs/texture/grass/level_ground_log_middle_right.png");
+	loadTexture((char*)"romfs/texture/grass/level_ground_log_bottom_left.png");
+	loadTexture((char*)"romfs/texture/grass/level_ground_log_bottom_kinda_left.png");
+	loadTexture((char*)"romfs/texture/grass/level_ground_log_bottom_kinda_right.png");
+	loadTexture((char*)"romfs/texture/grass/level_ground_log_bottom_right.png");
 	
 }
 
@@ -89,10 +98,32 @@ void SDL_Screen::loadTexture(char* filePath) {
 	SDL_FreeSurface(image_sur);
 }
 
-void SDL_Screen::drawRectangle(int x, int y, int width, int height) {
+void SDL_Screen::drawRectangle(int x, int y, int width, int height, int color) {
 	SDL_Rect rect = {x, y, width, height};
+	switch (color) {
+		case CLR_BLU:
+			SDL_SetRenderDrawColor(rend, 0x00, 0x00, 0xff, SDL_ALPHA_OPAQUE);
+		break;
+		case CLR_WHT:
+			SDL_SetRenderDrawColor(rend, 0xff, 0xff, 0xff, SDL_ALPHA_OPAQUE);
+		break;
+		case CLR_RED:
+			SDL_SetRenderDrawColor(rend, 0xff, 0x00, 0x00, SDL_ALPHA_OPAQUE);
+		break;
+		case CLR_GRN:
+			SDL_SetRenderDrawColor(rend, 0x00, 0xff, 0x00, SDL_ALPHA_OPAQUE);
+		break;
+		case CLR_BLK:
+			SDL_SetRenderDrawColor(rend, 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
+		break;
+		case CLR_YLW:
+			SDL_SetRenderDrawColor(rend, 0xff, 0xff, 0x00, SDL_ALPHA_OPAQUE);
+		break;
+		case CLR_GRY:
+			SDL_SetRenderDrawColor(rend, 0x80, 0x80, 0x80, SDL_ALPHA_OPAQUE);
+		break;
+	}
 	SDL_RenderFillRect(rend, &rect);
-
 }
 
 void SDL_Screen::drawImageWithDir(int imageId, int x, int y, int width, int height, bool flip) {

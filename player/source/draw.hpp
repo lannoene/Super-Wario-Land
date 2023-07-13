@@ -17,7 +17,7 @@ public:
 	void drawText(char* inputText, int x, int y, float textSize);
 	void drawImage(int imageId, int x, int y, int width, int height);
 	void flipImage(int imageId);
-	void drawRectangle(int x, int y, int width, int height);
+	void drawRectangle(int x, int y, int width, int height, int color);
 	void drawImageWithDir(int imageId, int x, int y, int width, int height, bool flip);
 private:
 	//window rend vars
@@ -61,5 +61,24 @@ enum imageNums {
 	IMAGE_PLAYER_WARIO_WALK_1,
 	IMAGE_PLAYER_WARIO_WALK_2,
 	IMAGE_PLAYER_WARIO_WALK_3,
-	IMAGE_PLAYER_WARIO_WALK_4
+	IMAGE_PLAYER_WARIO_WALK_4,
+	IMAGE_TILE_GRASS_SEM_PLT,
+	IMAGE_TILE_MIDDLE_LOG_FAR_LEFT,
+	IMAGE_TILE_MIDDLE_LOG_INNER_LEFT,
+	IMAGE_TILE_MIDDLE_LOG_INNER_RIGHT,
+	IMAGE_TILE_MIDDLE_LOG_FAR_RIGHT,
+	IMAGE_TILE_BOTTOM_LOG_FAR_LEFT,
+	IMAGE_TILE_BOTTOM_LOG_INNER_LEFT,
+	IMAGE_TILE_BOTTOM_LOG_INNER_RIGHT,
+	IMAGE_TILE_BOTTOM_LOG_FAR_RIGHT
+};
+
+enum RECT_COLORS {
+	CLR_BLU,
+	CLR_WHT,
+	CLR_RED,
+	CLR_GRN,
+	CLR_BLK,
+	CLR_YLW,
+	CLR_GRY
 };

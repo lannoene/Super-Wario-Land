@@ -82,7 +82,7 @@ bool drawEditor(SDL_Screen &Scene) {
 							int stoiDestDoorId = 0;
 							try {
 								stoiDoorId = std::stoi(tempDoorIdText);
-							} catch (std::invalid_argument) {
+							} catch (std::invalid_argument const&) {
 								std::cout << "Invalid number" << std::endl;
 								delete Tile_array.data()[Tile_array.length() - 1];
 								Tile_array.array_splice(Tile_array.length() - 1, 1);
@@ -91,7 +91,7 @@ bool drawEditor(SDL_Screen &Scene) {
 							
 							try {
 								stoiDestDoorId = std::stoi(tempDestDoorIdText);
-							} catch (std::invalid_argument) {
+							} catch (std::invalid_argument const&) {
 								std::cout << "Invalid number" << std::endl;
 								delete Tile_array.data()[Tile_array.length() - 1];
 								Tile_array.array_splice(Tile_array.length() - 1, 1);
@@ -201,6 +201,33 @@ bool drawEditor(SDL_Screen &Scene) {
 		break;
 		case TILE_DIRT_BG_SHADOW:
 			snprintf(buffer, 50, "Current tile: Dirt_Bg_Tile_Shadow");
+		break;
+		case TILE_DIRT_SEMISOLID:
+			snprintf(buffer, 50, "Current tile: Dirt_Tile_Semi_Solid");
+		break;
+		case TILE_LOG_MIDDLE_FAR_LEFT:
+			snprintf(buffer, 50, "Current tile: Middle_Log_Tile_Far_Left");
+		break;
+		case TILE_LOG_MIDDLE_INNER_LEFT:
+			snprintf(buffer, 50, "Current tile: Middle_Log_Tile_Inner_Left");
+		break;
+		case TILE_LOG_MIDDLE_INNER_RIGHT:
+			snprintf(buffer, 50, "Current tile: Middle_Log_Tile_Inner_Right");
+		break;
+		case TILE_LOG_MIDDLE_FAR_RIGHT:
+			snprintf(buffer, 50, "Current tile: Middle_Log_Tile_Far_Right");
+		break;
+		case TILE_LOG_BOTTOM_FAR_LEFT:
+			snprintf(buffer, 50, "Current tile: Bottom_Log_Tile_Far_Left");
+		break;
+		case TILE_LOG_BOTTOM_INNER_LEFT:
+			snprintf(buffer, 50, "Current tile: Bottom_Log_Tile_Inner_Left");
+		break;
+		case TILE_LOG_BOTTOM_INNER_RIGHT:
+			snprintf(buffer, 50, "Current tile: Bottom_Log_Tile_Inner_Right");
+		break;
+		case TILE_LOG_BOTTOM_FAR_RIGHT:
+			snprintf(buffer, 50, "Current tile: Bottom_Log_Tile_Far_Right");
 		break;
 	}
 	Scene.drawText(buffer, 0, 60, 30);

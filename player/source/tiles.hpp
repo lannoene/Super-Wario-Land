@@ -32,6 +32,7 @@ public:
 	void draw(SDL_Screen &Scene);
 	int getType(void);
 	bool colidable;
+	bool semisolid;
 	void update(size_t frame, Player &player);
 private:
 	int type;
@@ -57,5 +58,14 @@ enum tileType {
 	TILE_DOOR,
 	TILE_DOOR_BOTTOM,
 	TILE_DIRT_BG,
-	TILE_DIRT_BG_SHADOW
+	TILE_DIRT_BG_SHADOW,
+	TILE_DIRT_SEMISOLID,
+	TILE_LOG_MIDDLE_FAR_LEFT,
+	TILE_LOG_MIDDLE_INNER_LEFT,
+	TILE_LOG_MIDDLE_INNER_RIGHT,
+	TILE_LOG_MIDDLE_FAR_RIGHT,
+	TILE_LOG_BOTTOM_FAR_LEFT,
+	TILE_LOG_BOTTOM_INNER_LEFT,
+	TILE_LOG_BOTTOM_INNER_RIGHT,
+	TILE_LOG_BOTTOM_FAR_RIGHT
 };

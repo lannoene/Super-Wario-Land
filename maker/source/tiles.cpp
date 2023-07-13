@@ -81,6 +81,33 @@ void Tile::draw(SDL_Screen &Scene) {
 		case TILE_DIRT_BG_SHADOW:
 			Scene.drawImage(IMAGE_TILE_GRASS_DIRT_BG_SHADOW, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
 		break;
+		case TILE_DIRT_SEMISOLID:
+			Scene.drawImage(IMAGE_TILE_GRASS_SEM_PLT, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_LOG_MIDDLE_FAR_LEFT:
+			Scene.drawImage(IMAGE_TILE_MIDDLE_LOG_FAR_LEFT, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_LOG_MIDDLE_INNER_LEFT:
+			Scene.drawImage(IMAGE_TILE_MIDDLE_LOG_INNER_LEFT, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_LOG_MIDDLE_INNER_RIGHT:
+			Scene.drawImage(IMAGE_TILE_MIDDLE_LOG_INNER_RIGHT, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_LOG_MIDDLE_FAR_RIGHT:
+			Scene.drawImage(IMAGE_TILE_MIDDLE_LOG_FAR_RIGHT, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_LOG_BOTTOM_FAR_LEFT:
+			Scene.drawImage(IMAGE_TILE_BOTTOM_LOG_FAR_LEFT, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_LOG_BOTTOM_INNER_LEFT:
+			Scene.drawImage(IMAGE_TILE_BOTTOM_LOG_INNER_LEFT, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_LOG_BOTTOM_INNER_RIGHT:
+			Scene.drawImage(IMAGE_TILE_BOTTOM_LOG_INNER_RIGHT, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_LOG_BOTTOM_FAR_RIGHT:
+			Scene.drawImage(IMAGE_TILE_BOTTOM_LOG_FAR_RIGHT, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
 	}
 }
 

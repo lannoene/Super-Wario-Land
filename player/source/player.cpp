@@ -99,6 +99,68 @@ int Player::playerCheckHorizBoundries(float your_x, float your_y, float your_wid
 	return -1;
 }
 
+void Player::bruh(SDL_Audio &Audio) {
+	isTouchingGround = false;
+	for (size_t i = 0; i < Tile_array.length(); i++) {
+		if (checkVertBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
+			if (Tile_array.data()[i]->colidable == true) {
+				if (playerState == STANDING) {
+					if (!Tile_array.data()[i]->semisolid) {
+						isTouchingGround = true;
+					} else if (Tile_array.data()[i]->semisolid && this->y + (float)this->hitboxHeight <= Tile_array.data()[i]->y) {
+						isTouchingGround = true;
+					}
+				}
+			}
+		}
+	}
+	
+	for (size_t i = 0; i < Tile_array.length(); i++) {
+		if (checkVertBounds(this->x, this->y - vertVect, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
+			if (Tile_array.data()[i]->colidable == true) {
+				if (isTouchingGround == false && this->playerState == FALLING) {
+					if (!Tile_array.data()[i]->semisolid || (Tile_array.data()[i]->semisolid && this->y + (float)this->hitboxHeight <= Tile_array.data()[i]->y)) {
+						//vertVect = -(Tile_array.data()[intersetingRet]->y - this->y - hitboxHeight);//changed this from setting your vect to setting your pos so that colision bugs aren't so catastrophic
+						if (vertVect <= -playerMaxVertSpeed*0.6 && horizVect == 0) {
+							Audio.playSFX(SFX_LAND, 0);
+						}
+						this->vertVect = 0;
+						this->y =  Tile_array.data()[i]->y - this->hitboxHeight;
+						this->playerState = STANDING;
+						this->animState = ANIM_STAND;
+						this->isTouchingGround = true;
+					}
+				}
+			}
+		}
+	}
+	
+	for (size_t i = 0; i < Tile_array.length(); i++) {
+		if (checkVertBounds(this->x, this->y - vertVect - 1, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
+			if (Tile_array.data()[i]->colidable == true) {
+				if (isTouchingGround == false && playerState == JUMPING && !Tile_array.data()[i]->semisolid) {
+					//vertVect = -(Tile_array.data()[intersectingBottomForCeling]->y - this->y + Tile_array.data()[intersectingBottomForCeling]->height) - 1;
+					this->vertVect = 0;
+					this->y = Tile_array.data()[i]->y + Tile_array.data()[i]->height + 1;
+				}
+			}
+		}
+	}
+	
+	if (this->isTouchingGround == false && this->vertVect > -this->playerMaxVertSpeed) {
+		this->vertVect -= GRAVITY;
+		if (this->vertVect < 0) {
+			this->playerState = FALLING;
+		}
+	} else if (this->isTouchingGround == true) {
+		this->vertVect = 0;
+	}
+	
+	if (!this->isTouchingGround) {
+		this->animState = ANIM_JUMP;
+	}
+}
+
 bool showDebugInfo = false;
 
 void Player::draw(SDL_Screen &Scene, int gameFrame) {
@@ -153,42 +215,7 @@ void Player::draw(SDL_Screen &Scene, int gameFrame) {
 }
 
 void Player::calcVertPhysics(SDL_Audio &Audio) {
-	if (playerCheckVertBoundries(this->x, this->y, this->hitboxWidth, this->hitboxHeight) != -1 && playerState == STANDING) {
-		isTouchingGround = true;
-	} else {
-		isTouchingGround = false;
-	}
-	
-	if (this->isTouchingGround == false && this->vertVect > -this->playerMaxVertSpeed) {
-		this->vertVect -= GRAVITY;
-		if (this->vertVect < 0) {
-			this->playerState = FALLING;
-		}
-	} else if (this->isTouchingGround == true) {
-		this->vertVect = 0;
-	}
-	
-	int intersetingRet = playerCheckVertBoundries(this->x, this->y - vertVect, this->hitboxWidth, this->hitboxHeight);
-	int intersectingBottomForCeling = playerCheckVertBoundries(this->x, this->y - vertVect - 1, this->hitboxWidth, this->hitboxHeight);//we have to do the ceiling seperate bcz stuff
-	
-	if (isTouchingGround == false && intersetingRet != -1 && this->playerState == FALLING) {
-		//vertVect = -(Tile_array.data()[intersetingRet]->y - this->y - hitboxHeight);//changed this from setting your vect to setting your pos so that colision bugs aren't so catastrophic
-		if (vertVect <= -playerMaxVertSpeed*0.6 && horizVect == 0) {
-			Audio.playSFX(SFX_LAND, 0);
-		}
-		this->vertVect = 0;
-		this->y =  Tile_array.data()[intersetingRet]->y - this->hitboxHeight;
-		this->playerState = STANDING;
-		this->animState = ANIM_STAND;
-	} else if (isTouchingGround == false && intersectingBottomForCeling != -1 && playerState == JUMPING) {
-		//vertVect = -(Tile_array.data()[intersectingBottomForCeling]->y - this->y + Tile_array.data()[intersectingBottomForCeling]->height) - 1;
-		this->vertVect = 0;
-		this->y = Tile_array.data()[intersectingBottomForCeling]->y + Tile_array.data()[intersectingBottomForCeling]->height + 1;
-	}
-	
-	if (!this->isTouchingGround) {
-		this->animState = ANIM_JUMP;
-	}
+	bruh(Audio);
 	
 	this->y -= this->vertVect;
 }
@@ -251,11 +278,11 @@ void Player::calcHorizPhysics(SDL_Audio &Audio) {
 	if (playerCheckHorizBoundries(this->x + horizVect, this->y, this->hitboxWidth, this->hitboxHeight, true) != -1) {
 		int intersectingTileId = playerCheckHorizBoundries(this->x + horizVect, this->y, this->hitboxWidth, this->hitboxHeight, true);
 		
-		if (horizVect > 0) {
+		if (horizVect > 0 && !Tile_array.data()[intersectingTileId]->semisolid) {
 			//horizVect = Tile_array.data()[intersectingTileId]->x - this->x - this->hitboxWidth;
 			horizVect = 0;
 			this->x = Tile_array.data()[intersectingTileId]->x - this->hitboxWidth;
-		} else if (horizVect < 0) {
+		} else if (horizVect < 0 && !Tile_array.data()[intersectingTileId]->semisolid) {
 			//horizVect = Tile_array.data()[intersectingTileId]->x + Tile_array.data()[intersectingTileId]->width - this->x;
 			horizVect = 0;
 			this->x = Tile_array.data()[intersectingTileId]->x + Tile_array.data()[intersectingTileId]->width;

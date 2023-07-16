@@ -55,6 +55,9 @@ bool drawGame(SDL_Screen &Scene, SDL_Audio &Audio) {
 					case SDL_SCANCODE_UP:
 						wario.enterDoor();
 					break;
+					case SDL_SCANCODE_Z:
+						wario.shoulderBash(Audio, gameFrame);
+					break;
 					default:
 					break;
 				}

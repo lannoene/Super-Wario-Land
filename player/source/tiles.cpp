@@ -206,7 +206,7 @@ PhysicsTile::PhysicsTile(int input_x, int input_y, int type) : Tile(input_x, inp
 	} else {
 		this->tileHorizVect = -5;
 	}
-	tileDeceleration[false] = 0.05;
+	tileDeceleration[false] = 0.02;
 	tileDeceleration[true] = 0.1;
 }
 

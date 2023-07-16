@@ -31,7 +31,7 @@ public:
 		array_ptr[0] = value;
 	}
 	void array_splice(size_t index, int elements) {
-		if (index > array_length || index + elements > array_length || index < 0 || index + elements < 0) {
+		if (index > array_length || index + elements > array_length) {
 			return;
 		}
 		for (size_t i = index; i < array_length; i++) {

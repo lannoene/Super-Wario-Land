@@ -25,39 +25,34 @@ Player::Player() {
 	this->animTimer = 0;
 	this->animDelay = 5;//frames
 	this->animDirection = RIGHT;
-	playerDeceleration[0] = 0.3;
-	playerDeceleration[1] = 0.6;
+	this->moveState = NORMAL;
+	playerDeceleration[false] = 0.3;
+	playerDeceleration[true] = 0.6;
 }
 
 Player::~Player() {
 }
 
 void Player::update(SDL_Audio &Audio, int gameFrame) {
-	int ret = -1;
 	for (size_t i = 0; i < Tile_array.length(); i++) {
 		if (tools::checkHorizBounds(x, y, hitboxWidth, hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
 			if (Tile_array.data()[i]->getType() == GOLD_COIN) {
-				ret = i;
-				break;
+				switch (Tile_array.data()[i]->getType()) {
+					default:
+					break;
+					case GOLD_COIN:
+						delete Tile_array.data()[i];
+						Tile_array.array_splice(i, 1);
+						this->collectCoin(1);
+						Audio.playSFX(SFX_COLLECT_COIN, 1);
+					break;
+				}
 			}
 		}
 	}
-	if (ret != -1) {
-		switch (Tile_array.data()[ret]->getType()) {
-			default:
-			break;
-			case GOLD_COIN:
-				delete Tile_array.data()[ret];
-				Tile_array.array_splice(ret, 1);
-				this->collectCoin(1);
-				Audio.playSFX(SFX_COLLECT_COIN, 1);
-			break;
-		}
-	}	
-	
 	
 	calcVertPhysics(Audio, gameFrame);
-	calcHorizPhysics(Audio);
+	calcHorizPhysics(Audio, gameFrame);
 	
 	this->prevAnimState = this->animState;
 }
@@ -88,18 +83,18 @@ bool showDebugInfo = false;
 
 void Player::draw(SDL_Screen &Scene, int gameFrame) {
 	if (showDebugInfo == true) {
-		Scene.drawImage(IMAGE_HITBOX_RECTANGLE, this->x + cameraHorizOffsetPx, this->y, this->hitboxWidth, this->hitboxHeight);
+		Scene.drawRectangle(this->x + cameraHorizOffsetPx, this->y, this->hitboxWidth, this->hitboxHeight, CLR_BLU);
 		char buffer[64];
 		snprintf(buffer, sizeof(buffer), "%f", this->horizVect);
-		Scene.drawText((char*)buffer, 0, 0, 30);
-		snprintf(buffer, sizeof(buffer), "%f", this->vertVect);
 		Scene.drawText((char*)buffer, 0, 30, 30);
-		snprintf(buffer, sizeof(buffer), "%f", this->x);
+		snprintf(buffer, sizeof(buffer), "%f", this->vertVect);
 		Scene.drawText((char*)buffer, 0, 60, 30);
-		snprintf(buffer, sizeof(buffer), "%f", this->y);
+		snprintf(buffer, sizeof(buffer), "%f", this->x);
 		Scene.drawText((char*)buffer, 0, 90, 30);
-		snprintf(buffer, sizeof(buffer), "%d", this->playerState);
+		snprintf(buffer, sizeof(buffer), "%f", this->y);
 		Scene.drawText((char*)buffer, 0, 120, 30);
+		snprintf(buffer, sizeof(buffer), "%d", this->playerState);
+		Scene.drawText((char*)buffer, 0, 150, 30);
 	}
 	
 	if (this->prevAnimState != this->animState)
@@ -116,6 +111,7 @@ void Player::draw(SDL_Screen &Scene, int gameFrame) {
 			Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_FALL, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 		break;
 		case ANIM_WALK:
+		this->animDelay = 5;
 			switch (this->animTimer) {
 				default:
 					this->animTimer = 0;
@@ -134,6 +130,77 @@ void Player::draw(SDL_Screen &Scene, int gameFrame) {
 					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_WALK_4, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 			}
+		break;
+		case ANIM_BASH:
+			this->animDelay = 2;
+			switch (this->animTimer) {
+				default:
+					this->animTimer = 0;
+					// fallthrough
+				case 0:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 1:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_2, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 2:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_3, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 3:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_4, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 4:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 5:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_2, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 6:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_3, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 7:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_4, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 8:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 9:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_2, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 10:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_3, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 11:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_4, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 12:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 13:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_2, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 14:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_3, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 15:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_4, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 16:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_5, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 17:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_6, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 18:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_7, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 19:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_8, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+			}
+		break;
+		case ANIM_BASH_JUMP:
+			Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_JUMP, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 		break;
 	}
 }
@@ -166,7 +233,11 @@ void Player::calcVertPhysics(SDL_Audio &Audio, int gameFrame) {
 						this->vertVect = 0;
 						this->y =  Tile_array.data()[i]->y - this->hitboxHeight;
 						this->playerState = STANDING;
-						this->animState = ANIM_STAND;
+						if (this->moveState == NORMAL) {
+							this->animState = ANIM_STAND;
+						} else if (this->moveState == SHOULDER_BASH) {
+							this->animState = ANIM_BASH;
+						}
 						this->isTouchingGround = true;
 					}
 				}
@@ -179,15 +250,15 @@ void Player::calcVertPhysics(SDL_Audio &Audio, int gameFrame) {
 			if (Tile_array.data()[i]->colidable == true) {
 				if (isTouchingGround == false && playerState == JUMPING && !Tile_array.data()[i]->semisolid) {
 					//vertVect = -(Tile_array.data()[intersectingBottomForCeling]->y - this->y + Tile_array.data()[intersectingBottomForCeling]->height) - 1;
-					this->vertVect = 0;
 					this->y = Tile_array.data()[i]->y + Tile_array.data()[i]->height + 1;
 					Tile_array.data()[i]->tileVertVect = 0;
+					this->vertVect = 0;
 					if (Tile_array.data()[i]->breakable) {
-						if (gameFrame % 2 == 0)
+						if (rand() % 2 == 0)
 							Tile_array.array_push(new PhysicsTile(Tile_array.data()[i]->x, Tile_array.data()[i]->y, GOLD_COIN));
-						
 						delete Tile_array.data()[i];
 						Tile_array.array_splice(i, 1);
+						Audio.playSFX(SFX_BREAK, 0);
 					}
 				}
 			}
@@ -204,13 +275,80 @@ void Player::calcVertPhysics(SDL_Audio &Audio, int gameFrame) {
 	}
 	
 	if (!this->isTouchingGround) {
-		this->animState = ANIM_JUMP;
+		if (this->moveState == NORMAL) {
+			this->animState = ANIM_JUMP;
+		} else if (this->moveState == SHOULDER_BASH) {
+			this->animState = ANIM_BASH_JUMP;
+		}
 	}
 	
 	this->y -= this->vertVect;
 }
 
-void Player::calcHorizPhysics(SDL_Audio &Audio) {
+void Player::calcHorizPhysics(SDL_Audio &Audio, int gameFrame) {
+	switch (this->moveState) {
+		case NORMAL:
+			userMove(Audio);
+		break;
+		case SHOULDER_BASH:
+			calcShoulderBash(Audio, gameFrame);
+		break;
+	}
+	
+	
+	if (playerCheckHorizBoundries(this->x + horizVect, this->y, this->hitboxWidth, this->hitboxHeight, true) != -1) {
+		int intersectingTileId = playerCheckHorizBoundries(this->x + horizVect, this->y, this->hitboxWidth, this->hitboxHeight, true);
+		
+		if (horizVect > 0 && !Tile_array.data()[intersectingTileId]->semisolid) {
+			this->x = Tile_array.data()[intersectingTileId]->x - this->hitboxWidth;
+			if (this->moveState == NORMAL) {
+				horizVect = 0;
+			} else if (this->moveState == SHOULDER_BASH) {
+				vertVect = 3;
+				horizVect = -5;
+				this->moveState = NORMAL;
+				this->playerState = JUMPING;
+				Audio.playSFX(SFX_BUMP, 0);
+				if (Tile_array.data()[intersectingTileId]->breakable) {
+					if (rand() % 2 == 0)
+						Tile_array.array_push(new PhysicsTile(Tile_array.data()[intersectingTileId]->x, Tile_array.data()[intersectingTileId]->y, GOLD_COIN));
+					delete Tile_array.data()[intersectingTileId];
+					Tile_array.array_splice(intersectingTileId, 1);
+					Audio.playSFX(SFX_BREAK, 1);
+				}
+			}
+		} else if (horizVect < 0 && !Tile_array.data()[intersectingTileId]->semisolid) {
+			this->x = Tile_array.data()[intersectingTileId]->x + Tile_array.data()[intersectingTileId]->width;
+			if (this->moveState == NORMAL) {
+				horizVect = 0;
+			} else if (this->moveState == SHOULDER_BASH) {
+				vertVect = 3;
+				horizVect = 5;
+				this->moveState = NORMAL;
+				this->playerState = JUMPING;
+				Audio.playSFX(SFX_BUMP, 0);
+				if (Tile_array.data()[intersectingTileId]->breakable) {
+					if (rand() % 2 == 0)
+						Tile_array.array_push(new PhysicsTile(Tile_array.data()[intersectingTileId]->x, Tile_array.data()[intersectingTileId]->y, GOLD_COIN));
+					delete Tile_array.data()[intersectingTileId];
+					Tile_array.array_splice(intersectingTileId, 1);
+					Audio.playSFX(SFX_BREAK, 1);
+				}
+			}
+		}
+	}
+	
+	if (this->x > 300) {
+		//cameraHorizOffsetPx -= horizVect;
+		cameraHorizOffsetPx = -this->x + 300;
+	} else {
+		cameraHorizOffsetPx = 0;
+	}
+	
+	x += horizVect;
+}
+
+inline void Player::userMove(SDL_Audio &Audio) {
 	if (this->playerPressedMoveDir == NONE) {
 		if (this->horizVect > 0) {
 			this->horizVect += -this->playerDeceleration[isTouchingGround];
@@ -238,12 +376,12 @@ void Player::calcHorizPhysics(SDL_Audio &Audio) {
 		} else {
 			horizVect = playerMaxHorizSpeed;
 		}
-		if (this->walkSoundTimer >= 40 && this->isTouchingGround == true) {
+		if (this->soundTimer >= 40 && this->isTouchingGround == true) {
 			Audio.playSFX(SFX_WALK, 0);
-			this->walkSoundTimer = 0;
+			this->soundTimer = 0;
 		}
 		
-		++this->walkSoundTimer;
+		++this->soundTimer;
 		if (this->isTouchingGround && this->isTouchingGround)
 			this->animState = ANIM_WALK;
 	} else if (playerPressedMoveDir == LEFT) {
@@ -255,38 +393,40 @@ void Player::calcHorizPhysics(SDL_Audio &Audio) {
 			horizVect = -playerMaxHorizSpeed;
 		}
 		
-		if (this->walkSoundTimer >= 40 && this->isTouchingGround == true) {
+		if (this->soundTimer >= 40 && this->isTouchingGround == true) {
 			Audio.playSFX(SFX_WALK, 0);
-			this->walkSoundTimer = 0;
+			this->soundTimer = 0;
 		}
-		++this->walkSoundTimer;
+		++this->soundTimer;
 		
 		if (this->isTouchingGround)
 			this->animState = ANIM_WALK;
 	}
+}
+
+inline void Player::calcShoulderBash(SDL_Audio &Audio, int gameFrame) {
+	if (this->soundTimer >= 8) {
+		Audio.playSFX(SFX_DASH, 0);
+		this->soundTimer = 0;
+	}
+	++this->soundTimer;
 	
-	if (playerCheckHorizBoundries(this->x + horizVect, this->y, this->hitboxWidth, this->hitboxHeight, true) != -1) {
-		int intersectingTileId = playerCheckHorizBoundries(this->x + horizVect, this->y, this->hitboxWidth, this->hitboxHeight, true);
-		
-		if (horizVect > 0 && !Tile_array.data()[intersectingTileId]->semisolid) {
-			//horizVect = Tile_array.data()[intersectingTileId]->x - this->x - this->hitboxWidth;
-			horizVect = 0;
-			this->x = Tile_array.data()[intersectingTileId]->x - this->hitboxWidth;
-		} else if (horizVect < 0 && !Tile_array.data()[intersectingTileId]->semisolid) {
-			//horizVect = Tile_array.data()[intersectingTileId]->x + Tile_array.data()[intersectingTileId]->width - this->x;
-			horizVect = 0;
-			this->x = Tile_array.data()[intersectingTileId]->x + Tile_array.data()[intersectingTileId]->width;
-		}
+	if (this->animDirection == RIGHT) {
+		if (this->horizVect < 7)
+			this->horizVect += this->playerAcceleration;
+		else
+			this->horizVect = 7;
+	} else if (this->animDirection == LEFT) {
+		if (this->horizVect > -7)
+			this->horizVect += -this->playerAcceleration;
+		else
+			this->horizVect = -7;
 	}
 	
-	if (this->x > 300) {
-		//cameraHorizOffsetPx -= horizVect;
-		cameraHorizOffsetPx = -this->x + 300;
-	} else {
-		cameraHorizOffsetPx = 0;
+	if (gameFrame - this->moveStartTime > 50 && this->isTouchingGround) { //shoulderbash duration
+		this->moveState = NORMAL;
+		this->horizVect = 0;
 	}
-	
-	x += horizVect;
 }
 
 void Player::jump(SDL_Audio &Audio) {
@@ -300,8 +440,13 @@ void Player::jump(SDL_Audio &Audio) {
 
 void Player::moveHoriz(int dir, SDL_Audio &Audio) {
 	if (this->playerPressedMoveDir != dir && this->playerPressedMoveDir == NONE) {
-		this->walkSoundTimer = 30;
+		this->soundTimer = 30;
 	}
+	
+	if (dir != this->playerPressedMoveDir && dir != this->animDirection && this->moveState == SHOULDER_BASH) {
+		this->moveState = NORMAL;
+	}
+	
 	this->playerPressedMoveDir = dir;
 	if (dir != NONE)
 		this->animDirection = dir;
@@ -345,5 +490,13 @@ void Player::enterDoor(void) {
 				//this->playerPressedMoveDir = NONE;
 			}
 		}
+	}
+}
+
+void Player::shoulderBash(SDL_Audio &Audio, int gameFrame) {
+	if (this->isTouchingGround && this->moveState != SHOULDER_BASH) {
+		this->moveStartTime = gameFrame;
+		this->moveState = SHOULDER_BASH;
+		this->animState = ANIM_BASH;
 	}
 }

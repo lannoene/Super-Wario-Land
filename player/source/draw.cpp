@@ -52,6 +52,15 @@ SDL_Screen::SDL_Screen() {
 	loadTexture((char*)"romfs/texture/grass/level_ground_log_bottom_kinda_right.png");
 	loadTexture((char*)"romfs/texture/grass/level_ground_log_bottom_right.png");
 	loadTexture((char*)"romfs/texture/grass/purple_block_small_cracks.png");
+	loadTexture((char*)"romfs/sprite/wario_player_bash1.png");
+	loadTexture((char*)"romfs/sprite/wario_player_bash2.png");
+	loadTexture((char*)"romfs/sprite/wario_player_bash3.png");
+	loadTexture((char*)"romfs/sprite/wario_player_bash4.png");
+	loadTexture((char*)"romfs/sprite/wario_player_bash5.png");
+	loadTexture((char*)"romfs/sprite/wario_player_bash6.png");
+	loadTexture((char*)"romfs/sprite/wario_player_bash7.png");
+	loadTexture((char*)"romfs/sprite/wario_player_bash8.png");
+	loadTexture((char*)"romfs/sprite/wario_player_bash_jump.png");
 }
 
 SDL_Screen::~SDL_Screen() {

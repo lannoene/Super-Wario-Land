@@ -21,9 +21,10 @@ public:
 	void setXYPos(int x, int y);
 	int getCoinCount(void);
 	void enterDoor(void);
+	void shoulderBash(SDL_Audio &Audio, int gameFrame);
 private:
 	float x, y, horizVect, vertVect;
-	int hitboxWidth, hitboxHeight, spriteWidth, spriteHeight, horizSpriteOffset, vertSpriteOffset, animTimer, animDelay, animState, prevAnimState, animDirection;
+	int hitboxWidth, hitboxHeight, spriteWidth, spriteHeight, horizSpriteOffset, vertSpriteOffset, animTimer, animDelay, animState, prevAnimState, animDirection, moveStartTime, moveState;
 	bool isTouchingGround;
 	int playerState;
 	int playerPressedMoveDir;
@@ -33,16 +34,18 @@ private:
 	float playerMaxVertSpeed = 10;
 	float playerJumpForce = 8;
 	int coins = 0;
-	int walkSoundTimer = 0;
+	int soundTimer = 0;
 	
 	void calcVertPhysics(SDL_Audio &Audio, int gameFrame);
-	void calcHorizPhysics(SDL_Audio &Audio);
+	void calcHorizPhysics(SDL_Audio &Audio, int gameFrame);
 	int playerCheckVertBoundries(float your_x, float your_y, float your_width, float your_height);
 	int playerCheckHorizBoundries(float your_x, float your_y, float your_width, float your_height, bool mustColide);
 	void collectCoin(int amount);
+	inline void userMove(SDL_Audio &Audio);
+	inline void calcShoulderBash(SDL_Audio &Audio, int gameFrame);
 };
 
-enum states {
+enum GROUND_STATES {
 	STANDING = 0,
 	JUMPING,
 	FALLING
@@ -51,5 +54,15 @@ enum states {
 enum ANIM_STATES {
 	ANIM_STAND = 0,
 	ANIM_WALK,
-	ANIM_JUMP
+	ANIM_JUMP,
+	ANIM_BASH,
+	ANIM_BASH_JUMP
+};
+
+enum MOVE_STATES {
+	NORMAL, // or standing/jumping/walking idk
+	SHOULDER_BASH,
+	GROUND_POUND,
+	ROLL,
+	BUMP
 };

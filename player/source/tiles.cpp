@@ -1,5 +1,8 @@
 #include "player.hpp"
 #include "tiles.hpp"
+#include "tools.hpp"
+
+int tileCount = 0;
 
 Tile::Tile(int input_x, int input_y, int type) {
 	this->x = input_x;
@@ -8,6 +11,9 @@ Tile::Tile(int input_x, int input_y, int type) {
 	this->height = TILESIZE;
 	this->type = type;
 	this->semisolid = false;
+	this->breakable = false;
+	this->tileId = tileCount;
+	++tileCount;
 	
 	switch (type) {
 		default:
@@ -30,6 +36,11 @@ Tile::Tile(int input_x, int input_y, int type) {
 			this->visible = true;
 			this->semisolid = true;
 			this->colidable = true;
+		break;
+		case TILE_PURPLE_SMALL_CRACKS:
+			this->visible = true;
+			this->colidable = true;
+			this->breakable = true;
 		break;
 	}
 }
@@ -144,5 +155,122 @@ void Tile::draw(SDL_Screen &Scene) {
 		case TILE_LOG_BOTTOM_FAR_RIGHT:
 			Scene.drawImage(IMAGE_TILE_BOTTOM_LOG_FAR_RIGHT, x + cameraHorizOffsetPx, y, width, height);
 		break;
+		case TILE_PURPLE_SMALL_CRACKS:
+			Scene.drawImage(IMAGE_TILE_PURPLE_BLOCK_SMALL_CRACKS, x + cameraHorizOffsetPx, y, width, height);
+		break;
 	}
+}
+
+PhysicsTile::PhysicsTile(int input_x, int input_y, int type) : Tile(input_x, input_y, type) {
+	this->x = input_x;
+	this->y = input_y;
+	this->width = TILESIZE;
+	this->height = TILESIZE;
+	this->type = type;
+	this->semisolid = false;
+	this->breakable = false;
+	this->colidable = false;
+	this->tileId = tileCount;
+	++tileCount;
+	
+	switch (type) {
+		default:
+			this->colidable = true;
+			this->visible = true;
+		break;
+		case TILE_SPAWN_POINT:
+			this->colidable = false;
+			this->visible = false;
+		break;
+		case GOLD_COIN:
+		case TILE_DOOR:
+		case TILE_DOOR_BOTTOM:
+		case TILE_DIRT_BG:
+		case TILE_DIRT_BG_SHADOW:
+			this->colidable = false;
+			this->visible = true;
+		break;
+		case TILE_DIRT_SEMISOLID:
+			this->visible = true;
+			this->semisolid = true;
+			this->colidable = true;
+		break;
+		case TILE_PURPLE_SMALL_CRACKS:
+			this->visible = true;
+			this->colidable = true;
+			this->breakable = true;
+		break;
+	}
+	if (rand()%2) {
+		this->tileHorizVect = 5;
+	} else {
+		this->tileHorizVect = -5;
+	}
+	tileDeceleration[false] = 0.05;
+	tileDeceleration[true] = 0.1;
+}
+
+PhysicsTile::~PhysicsTile(void) {
+}
+
+extern SquishyArray <Tile*>Tile_array;
+
+void PhysicsTile::update(size_t frame, Player &player) {
+	bool tileTouchingGround = false;
+	for (size_t i = 0; i < Tile_array.length(); i++) {
+		if (tools::checkVertBounds(this->x, this->y - this->tileVertVect, this->width, this->height, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height) && Tile_array.data()[i]->tileId != this->tileId) {
+			if (Tile_array.data()[i]->colidable == true) {
+				if (!Tile_array.data()[i]->semisolid || (Tile_array.data()[i]->semisolid && this->y + (float)this->height <= Tile_array.data()[i]->y)) {
+					this->tileVertVect = -this->tileVertVect*this->elasticity;
+					this->y = Tile_array.data()[i]->y - this->height;
+					if (this->tileVertVect < 1 && this->tileVertVect > -1) {
+						this->tileVertVect = 0;
+					}
+					tileTouchingGround = true;
+				}
+			}
+		}
+	}
+	
+	for (size_t i = 0; i < Tile_array.length(); i++) {
+		if (tools::checkVertBounds(this->x, this->y - this->tileVertVect - 1, this->width, this->height, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
+			if (Tile_array.data()[i]->colidable == true && Tile_array.data()[i]->tileId != this->tileId) {
+				if (!tileTouchingGround && !Tile_array.data()[i]->semisolid) {
+					//vertVect = -(Tile_array.data()[intersectingBottomForCeling]->y - this->y + Tile_array.data()[intersectingBottomForCeling]->height) - 1;
+					this->tileVertVect = 0;
+					this->y = Tile_array.data()[i]->y + Tile_array.data()[i]->height + 1;
+				}
+			}
+		}
+	}
+	
+	if (!tileTouchingGround)
+		this->tileVertVect -= GRAVITY;
+	
+	
+	
+	if (this->tileHorizVect > 0)
+		this->tileHorizVect -= this->tileDeceleration[tileTouchingGround];
+	else if (this->tileHorizVect < 0)
+		this->tileHorizVect -= -this->tileDeceleration[tileTouchingGround];
+	
+	if (this->tileHorizVect < this->tileDeceleration[tileTouchingGround] && this->tileHorizVect > -this->tileDeceleration[tileTouchingGround])
+		this->tileHorizVect = 0;
+	
+	for (size_t i = 0; i < Tile_array.length(); i++) {
+		if (tools::checkHorizBounds(this->x + this->tileHorizVect, this->y, this->width, this->height, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
+			if (this->tileHorizVect > 0 && !Tile_array.data()[i]->semisolid && Tile_array.data()[i]->colidable) {
+				//horizVect = Tile_array.data()[intersectingTileId]->x - this->x - this->hitboxWidth;
+				this->tileHorizVect = -this->tileHorizVect*this->elasticity;
+				this->x = Tile_array.data()[i]->x - this->width;
+			} else if (this->tileHorizVect < 0 && !Tile_array.data()[i]->semisolid && Tile_array.data()[i]->colidable) {
+				//horizVect = Tile_array.data()[intersectingTileId]->x + Tile_array.data()[intersectingTileId]->width - this->x;
+				this->tileHorizVect = -this->tileHorizVect*this->elasticity;
+				this->x = Tile_array.data()[i]->x + Tile_array.data()[i]->width;
+			}
+		}
+	}
+	
+	this->y -= this->tileVertVect;
+	this->x += this->tileHorizVect;
 }

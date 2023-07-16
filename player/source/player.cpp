@@ -2,6 +2,7 @@
 #include "player.hpp"
 #include "tiles.hpp"
 #include "squishy_array.hpp"
+#include "tools.hpp"
 
 extern float cameraHorizOffsetPx;
 extern SquishyArray <Tile*>Tile_array;
@@ -31,26 +32,10 @@ Player::Player() {
 Player::~Player() {
 }
 
-bool checkVertBounds(float inputChecking_x, float inputChecking_y, float input_width, float input_height, float inputCheckAgainst_x, float inputCheckAgainst_y, float destination_size_x, float destination_size_y) {
-	if (inputChecking_x + input_width > inputCheckAgainst_x && inputChecking_x < inputCheckAgainst_x + destination_size_x && inputChecking_y + input_height >= inputCheckAgainst_y && inputChecking_y < inputCheckAgainst_y + destination_size_y) {
-		return true;
-	} else {
-		return false;
-	}
-}
-
-bool checkHorizBounds(float inputChecking_x, float inputChecking_y, float input_width, float input_height, float inputCheckAgainst_x, float inputCheckAgainst_y, float destination_size_x, float destination_size_y) {
-	if (inputChecking_x + input_width >= inputCheckAgainst_x && inputChecking_x <= inputCheckAgainst_x + destination_size_x && inputChecking_y + input_height > inputCheckAgainst_y && inputChecking_y < inputCheckAgainst_y + destination_size_y) {
-		return true;
-	} else {
-		return false;
-	}
-}
-
-void Player::update(SDL_Audio &Audio) {
+void Player::update(SDL_Audio &Audio, int gameFrame) {
 	int ret = -1;
 	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (checkHorizBounds(x, y, hitboxWidth, hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
+		if (tools::checkHorizBounds(x, y, hitboxWidth, hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
 			if (Tile_array.data()[i]->getType() == GOLD_COIN) {
 				ret = i;
 				break;
@@ -71,7 +56,7 @@ void Player::update(SDL_Audio &Audio) {
 	}	
 	
 	
-	calcVertPhysics(Audio);
+	calcVertPhysics(Audio, gameFrame);
 	calcHorizPhysics(Audio);
 	
 	this->prevAnimState = this->animState;
@@ -79,7 +64,7 @@ void Player::update(SDL_Audio &Audio) {
 
 int Player::playerCheckVertBoundries(float your_x, float your_y, float your_width, float your_height) {
 	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (checkVertBounds(your_x, your_y, your_width, your_height, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height) && Tile_array.data()[i]->colidable == true) {
+		if (tools::checkVertBounds(your_x, your_y, your_width, your_height, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height) && Tile_array.data()[i]->colidable == true) {
 			return i;//the wall you intersected with
 		}
 	}
@@ -88,7 +73,7 @@ int Player::playerCheckVertBoundries(float your_x, float your_y, float your_widt
 
 int Player::playerCheckHorizBoundries(float your_x, float your_y, float your_width, float your_height, bool mustColide) {
 	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (checkHorizBounds(your_x, your_y, your_width, your_height, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
+		if (tools::checkHorizBounds(your_x, your_y, your_width, your_height, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
 			if (mustColide == true && Tile_array.data()[i]->colidable == true) {
 				return i;//the wall you intersected with
 			} else if (mustColide == false) {
@@ -97,68 +82,6 @@ int Player::playerCheckHorizBoundries(float your_x, float your_y, float your_wid
 		}
 	}
 	return -1;
-}
-
-void Player::bruh(SDL_Audio &Audio) {
-	isTouchingGround = false;
-	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (checkVertBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (Tile_array.data()[i]->colidable == true) {
-				if (playerState == STANDING) {
-					if (!Tile_array.data()[i]->semisolid) {
-						isTouchingGround = true;
-					} else if (Tile_array.data()[i]->semisolid && this->y + (float)this->hitboxHeight <= Tile_array.data()[i]->y) {
-						isTouchingGround = true;
-					}
-				}
-			}
-		}
-	}
-	
-	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (checkVertBounds(this->x, this->y - vertVect, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (Tile_array.data()[i]->colidable == true) {
-				if (isTouchingGround == false && this->playerState == FALLING) {
-					if (!Tile_array.data()[i]->semisolid || (Tile_array.data()[i]->semisolid && this->y + (float)this->hitboxHeight <= Tile_array.data()[i]->y)) {
-						//vertVect = -(Tile_array.data()[intersetingRet]->y - this->y - hitboxHeight);//changed this from setting your vect to setting your pos so that colision bugs aren't so catastrophic
-						if (vertVect <= -playerMaxVertSpeed*0.6 && horizVect == 0) {
-							Audio.playSFX(SFX_LAND, 0);
-						}
-						this->vertVect = 0;
-						this->y =  Tile_array.data()[i]->y - this->hitboxHeight;
-						this->playerState = STANDING;
-						this->animState = ANIM_STAND;
-						this->isTouchingGround = true;
-					}
-				}
-			}
-		}
-	}
-	
-	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (checkVertBounds(this->x, this->y - vertVect - 1, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (Tile_array.data()[i]->colidable == true) {
-				if (isTouchingGround == false && playerState == JUMPING && !Tile_array.data()[i]->semisolid) {
-					//vertVect = -(Tile_array.data()[intersectingBottomForCeling]->y - this->y + Tile_array.data()[intersectingBottomForCeling]->height) - 1;
-					this->vertVect = 0;
-					this->y = Tile_array.data()[i]->y + Tile_array.data()[i]->height + 1;
-				}
-			}
-		}
-	}
-	
-	if (this->isTouchingGround == false && this->vertVect > -this->playerMaxVertSpeed) {
-		this->vertVect -= GRAVITY;
-		if (this->vertVect < 0) {
-			this->playerState = FALLING;
-		}
-	} else if (this->isTouchingGround == true) {
-		this->vertVect = 0;
-	}
-	
-	if (!this->isTouchingGround) {
-		this->animState = ANIM_JUMP;
-	}
 }
 
 bool showDebugInfo = false;
@@ -196,6 +119,7 @@ void Player::draw(SDL_Screen &Scene, int gameFrame) {
 			switch (this->animTimer) {
 				default:
 					this->animTimer = 0;
+				// fallthrough
 				case 0:
 					//Scene.drawImage(IMAGE_PLAYER_WARIO_WALK_1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight);
 					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_WALK_1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
@@ -214,8 +138,74 @@ void Player::draw(SDL_Screen &Scene, int gameFrame) {
 	}
 }
 
-void Player::calcVertPhysics(SDL_Audio &Audio) {
-	bruh(Audio);
+void Player::calcVertPhysics(SDL_Audio &Audio, int gameFrame) {
+	isTouchingGround = false;
+	for (size_t i = 0; i < Tile_array.length(); i++) {
+		if (tools::checkVertBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
+			if (Tile_array.data()[i]->colidable == true) {
+				if (playerState == STANDING) {
+					if (!Tile_array.data()[i]->semisolid) {
+						isTouchingGround = true;
+					} else if (Tile_array.data()[i]->semisolid && this->y + (float)this->hitboxHeight <= Tile_array.data()[i]->y) {
+						isTouchingGround = true;
+					}
+				}
+			}
+		}
+	}
+	
+	for (size_t i = 0; i < Tile_array.length(); i++) {
+		if (tools::checkVertBounds(this->x, this->y - vertVect, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
+			if (Tile_array.data()[i]->colidable == true) {
+				if (isTouchingGround == false && this->playerState == FALLING) {
+					if (!Tile_array.data()[i]->semisolid || (Tile_array.data()[i]->semisolid && this->y + (float)this->hitboxHeight <= Tile_array.data()[i]->y)) {
+						//vertVect = -(Tile_array.data()[intersetingRet]->y - this->y - hitboxHeight);//changed this from setting your vect to setting your pos so that colision bugs aren't so catastrophic
+						if (vertVect <= -playerMaxVertSpeed*0.6 && horizVect == 0) {
+							Audio.playSFX(SFX_LAND, 0);
+						}
+						this->vertVect = 0;
+						this->y =  Tile_array.data()[i]->y - this->hitboxHeight;
+						this->playerState = STANDING;
+						this->animState = ANIM_STAND;
+						this->isTouchingGround = true;
+					}
+				}
+			}
+		}
+	}
+	
+	for (size_t i = 0; i < Tile_array.length(); i++) {
+		if (tools::checkVertBounds(this->x, this->y - vertVect - 1, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
+			if (Tile_array.data()[i]->colidable == true) {
+				if (isTouchingGround == false && playerState == JUMPING && !Tile_array.data()[i]->semisolid) {
+					//vertVect = -(Tile_array.data()[intersectingBottomForCeling]->y - this->y + Tile_array.data()[intersectingBottomForCeling]->height) - 1;
+					this->vertVect = 0;
+					this->y = Tile_array.data()[i]->y + Tile_array.data()[i]->height + 1;
+					Tile_array.data()[i]->tileVertVect = 0;
+					if (Tile_array.data()[i]->breakable) {
+						if (gameFrame % 2 == 0)
+							Tile_array.array_push(new PhysicsTile(Tile_array.data()[i]->x, Tile_array.data()[i]->y, GOLD_COIN));
+						
+						delete Tile_array.data()[i];
+						Tile_array.array_splice(i, 1);
+					}
+				}
+			}
+		}
+	}
+	
+	if (this->isTouchingGround == false && this->vertVect > -this->playerMaxVertSpeed) {
+		this->vertVect -= GRAVITY;
+		if (this->vertVect < 0) {
+			this->playerState = FALLING;
+		}
+	} else if (this->isTouchingGround == true) {
+		this->vertVect = 0;
+	}
+	
+	if (!this->isTouchingGround) {
+		this->animState = ANIM_JUMP;
+	}
 	
 	this->y -= this->vertVect;
 }
@@ -339,7 +329,7 @@ int Player::getCoinCount(void) {
 void Player::enterDoor(void) {
 	int ret = -1;
 	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (checkHorizBounds(x, y, hitboxWidth, hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
+		if (tools::checkHorizBounds(x, y, hitboxWidth, hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
 			if (Tile_array.data()[i]->getType() == TILE_DOOR) {
 				ret = i;
 				break;

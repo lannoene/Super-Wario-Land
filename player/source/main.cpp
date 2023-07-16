@@ -10,6 +10,7 @@ int main(int argc, char* argv[]) {
 	SDL_Audio Audio;
 	titleScreenThing tlScrn;
 	bptr = &tlScrn;
+	srand((unsigned)time(0));
 	
 	while (true) {
 		if (bptr->draw(scene, Audio) == false)

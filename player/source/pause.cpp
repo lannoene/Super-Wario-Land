@@ -66,9 +66,9 @@ void pauseScreen(SDL_Screen &Scene, SDL_Audio &Audio) {
 					if (mousePushed) {
 						coord_click_x += event.motion.xrel;
 						coord_click_y += event.motion.yrel;
-						if (coord_click_x > 0 && coord_click_x < 0 + 512 && coord_click_y >= 30 && coord_click_y < 30 + 30 && clickedButton == SLIDER_SFX) {
+						if (coord_click_x > 0 && coord_click_x <= 0 + 513 && coord_click_y >= 30 && coord_click_y < 30 + 30 && clickedButton == SLIDER_SFX) {
 							Mix_Volume(-1, coord_click_x*MIX_MAX_VOLUME/512);
-						} else if (coord_click_x > 0 && coord_click_x < 0 + 512 && coord_click_y >= 60 && coord_click_y < 60 + 30 && clickedButton == SLIDER_MUS) {
+						} else if (coord_click_x > 0 && coord_click_x < 0 + 513 && coord_click_y >= 60 && coord_click_y < 60 + 30 && clickedButton == SLIDER_MUS) {
 							Mix_VolumeMusic(coord_click_x*MIX_MAX_VOLUME/512);
 						}
 					}

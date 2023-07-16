@@ -51,7 +51,7 @@ SDL_Screen::SDL_Screen() {
 	loadTexture((char*)"romfs/texture/grass/level_ground_log_bottom_kinda_left.png");
 	loadTexture((char*)"romfs/texture/grass/level_ground_log_bottom_kinda_right.png");
 	loadTexture((char*)"romfs/texture/grass/level_ground_log_bottom_right.png");
-	
+	loadTexture((char*)"romfs/texture/grass/purple_block_small_cracks.png");
 }
 
 SDL_Screen::~SDL_Screen() {

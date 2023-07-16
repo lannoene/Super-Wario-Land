@@ -13,7 +13,7 @@ class Player {
 public:
 	Player();
 	~Player();
-	void update(SDL_Audio &Audio);
+	void update(SDL_Audio &Audio, int gameFrame);
 	void draw(SDL_Screen &Scene, int gameFrame);
 	void jump(SDL_Audio &Audio);
 	void moveHoriz(int dir, SDL_Audio &Audio);
@@ -35,12 +35,11 @@ private:
 	int coins = 0;
 	int walkSoundTimer = 0;
 	
-	void calcVertPhysics(SDL_Audio &Audio);
+	void calcVertPhysics(SDL_Audio &Audio, int gameFrame);
 	void calcHorizPhysics(SDL_Audio &Audio);
 	int playerCheckVertBoundries(float your_x, float your_y, float your_width, float your_height);
 	int playerCheckHorizBoundries(float your_x, float your_y, float your_width, float your_height, bool mustColide);
 	void collectCoin(int amount);
-	void bruh(SDL_Audio &Audio);
 };
 
 enum states {

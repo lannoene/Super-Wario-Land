@@ -28,15 +28,32 @@ public:
 	} param3;
 	
 	Tile(int input_x, int input_y, int type);
-	~Tile();
+	virtual ~Tile();
 	void draw(SDL_Screen &Scene);
 	int getType(void);
 	bool colidable;
 	bool semisolid;
-	void update(size_t frame, Player &player);
-private:
+	bool breakable;
+	virtual void update(size_t frame, Player &player);
+	float tileVertVect = 0;
+	int tileId;
+protected:
 	int type;
 	bool visible;
+};
+
+class PhysicsTile : public Tile {
+public:
+	PhysicsTile(int input_x, int input_y, int type);
+	~PhysicsTile(void);
+	void update(size_t frame, Player &player) override;
+	
+	float tileVertVect = 0;
+	int tileId;
+private:
+	float elasticity = 0.5;
+	float tileHorizVect;
+	float tileDeceleration[2];
 };
 
 enum tileType {
@@ -67,5 +84,6 @@ enum tileType {
 	TILE_LOG_BOTTOM_FAR_LEFT,
 	TILE_LOG_BOTTOM_INNER_LEFT,
 	TILE_LOG_BOTTOM_INNER_RIGHT,
-	TILE_LOG_BOTTOM_FAR_RIGHT
+	TILE_LOG_BOTTOM_FAR_RIGHT,
+	TILE_PURPLE_SMALL_CRACKS
 };

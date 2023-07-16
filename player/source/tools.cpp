@@ -49,7 +49,9 @@ void tools::decodeLevelFileIntoMemory(std::string levelPath) {
 	const int entriesNum = 5;
 	for (size_t j = 0; j < LevelEntries.length()/entriesNum; j++) {
 		//std::cout << std::stoi(*LevelEntries.data()[j]) << " " << std::stoi(*LevelEntries.data()[j*entriesNum + 1]) << std::endl;
+		
 		Tile_array.array_push(new Tile(std::stoi(*LevelEntries.data()[j*entriesNum]), std::stoi(*LevelEntries.data()[j*entriesNum + 1]), std::stoi(*LevelEntries.data()[j*entriesNum + 2])));
+		
 	
 		switch (std::stoi(*LevelEntries.data()[j*entriesNum + 2])) {
 			default:
@@ -70,4 +72,20 @@ void tools::resetLevel(void) {
 		delete Tile_array.data()[i];
 	}
 	Tile_array.array_splice(0, Tile_array.length());
+}
+
+bool tools::checkVertBounds(float inputChecking_x, float inputChecking_y, float input_width, float input_height, float inputCheckAgainst_x, float inputCheckAgainst_y, float destination_size_x, float destination_size_y) {
+	if (inputChecking_x + input_width > inputCheckAgainst_x && inputChecking_x < inputCheckAgainst_x + destination_size_x && inputChecking_y + input_height >= inputCheckAgainst_y && inputChecking_y < inputCheckAgainst_y + destination_size_y) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool tools::checkHorizBounds(float inputChecking_x, float inputChecking_y, float input_width, float input_height, float inputCheckAgainst_x, float inputCheckAgainst_y, float destination_size_x, float destination_size_y) {
+	if (inputChecking_x + input_width >= inputCheckAgainst_x && inputChecking_x <= inputCheckAgainst_x + destination_size_x && inputChecking_y + input_height > inputCheckAgainst_y && inputChecking_y < inputCheckAgainst_y + destination_size_y) {
+		return true;
+	} else {
+		return false;
+	}
 }

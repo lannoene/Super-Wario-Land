@@ -87,7 +87,7 @@ bool drawGame(SDL_Screen &Scene, SDL_Audio &Audio) {
 		Tile_array.data()[i]->update((size_t)gameFrame, wario);
 		Tile_array.data()[i]->draw(Scene);
 	}
-	wario.update(Audio);
+	wario.update(Audio, gameFrame);
 	wario.draw(Scene, gameFrame);
 	
 	Scene.drawRectangle(0, 0, 150, 30, CLR_WHT);

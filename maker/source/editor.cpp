@@ -8,7 +8,7 @@
 #include "popups.hpp"
 
 float cameraHorizOffsetPx = 0;
-float cameraVertOffsetPx = 0;
+int cameraVertOffsetPx = 0;
 SquishyArray <Tile*>Tile_array(0);
 int currentTile = 0;
 

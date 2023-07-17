@@ -12,6 +12,7 @@ Player wario;
 
 int lastTime = 0;
 float cameraHorizOffsetPx = 0;
+int cameraVertOffsetPx = 0;
 
 extern base* bptr;
 extern gameScreen game;

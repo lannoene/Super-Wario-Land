@@ -5,6 +5,7 @@
 #include "tools.hpp"
 
 extern float cameraHorizOffsetPx;
+extern int cameraVertOffsetPx;
 extern SquishyArray <Tile*>Tile_array;
 
 Player::Player() {
@@ -83,7 +84,7 @@ bool showDebugInfo = false;
 
 void Player::draw(SDL_Screen &Scene, int gameFrame) {
 	if (showDebugInfo == true) {
-		Scene.drawRectangle(this->x + cameraHorizOffsetPx, this->y, this->hitboxWidth, this->hitboxHeight, CLR_BLU);
+		Scene.drawRectangle(this->x + cameraHorizOffsetPx, this->y + cameraVertOffsetPx, this->hitboxWidth, this->hitboxHeight, CLR_BLU);
 		char buffer[64];
 		snprintf(buffer, sizeof(buffer), "%f", this->horizVect);
 		Scene.drawText((char*)buffer, 0, 30, 30);
@@ -105,10 +106,10 @@ void Player::draw(SDL_Screen &Scene, int gameFrame) {
 	
 	switch (this->animState) {
 		case ANIM_STAND:
-			Scene.drawImageWithDir(IMAGE_PLAYER_WARIO, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+			Scene.drawImageWithDir(IMAGE_PLAYER_WARIO, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 		break;
 		case ANIM_JUMP:
-			Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_FALL, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+			Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_FALL, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 		break;
 		case ANIM_WALK:
 		this->animDelay = 5;
@@ -117,17 +118,17 @@ void Player::draw(SDL_Screen &Scene, int gameFrame) {
 					this->animTimer = 0;
 				// fallthrough
 				case 0:
-					//Scene.drawImage(IMAGE_PLAYER_WARIO_WALK_1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight);
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_WALK_1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					//Scene.drawImage(IMAGE_PLAYER_WARIO_WALK_1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_WALK_1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 				case 1:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_WALK_2, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_WALK_2, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 				case 2:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_WALK_3, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_WALK_3, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 				case 3:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_WALK_4, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_WALK_4, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 			}
 		break;
@@ -138,72 +139,72 @@ void Player::draw(SDL_Screen &Scene, int gameFrame) {
 					this->animTimer = 0;
 					// fallthrough
 				case 0:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 				case 1:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_2, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_2, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 				case 2:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_3, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_3, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 				case 3:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_4, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_4, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 				case 4:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 				case 5:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_2, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_2, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 				case 6:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_3, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_3, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 				case 7:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_4, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_4, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 				case 8:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 				case 9:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_2, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_2, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 				case 10:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_3, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_3, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 				case 11:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_4, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_4, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 				case 12:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 				case 13:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_2, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_2, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 				case 14:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_3, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_3, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 				case 15:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_4, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_4, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 				case 16:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_5, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_5, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 				case 17:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_6, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_6, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 				case 18:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_7, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_7, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 				case 19:
-					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_8, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_8, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 				break;
 			}
 		break;
 		case ANIM_BASH_JUMP:
-			Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_JUMP, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+			Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_JUMP, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 		break;
 		case ANIM_GROUND_POUND:
-			Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_GROUND_POUND1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+			Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_GROUND_POUND1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 		break;
 	}
 }
@@ -312,6 +313,14 @@ void Player::calcVertPhysics(SDL_Audio &Audio, int gameFrame) {
 	}
 	
 	this->y -= this->vertVect;
+	
+	
+	if (this->y > 250) {
+		//cameraHorizOffsetPx -= horizVect;
+		cameraVertOffsetPx = -this->y + 250;
+	} else {
+		cameraVertOffsetPx = 0;
+	}
 }
 
 void Player::calcHorizPhysics(SDL_Audio &Audio, int gameFrame) {
@@ -376,14 +385,14 @@ void Player::calcHorizPhysics(SDL_Audio &Audio, int gameFrame) {
 		}
 	}
 	
+	x += horizVect;
+	
 	if (this->x > 300) {
 		//cameraHorizOffsetPx -= horizVect;
 		cameraHorizOffsetPx = -this->x + 300;
 	} else {
 		cameraHorizOffsetPx = 0;
 	}
-	
-	x += horizVect;
 }
 
 inline void Player::userMoveHoriz(SDL_Audio &Audio) {

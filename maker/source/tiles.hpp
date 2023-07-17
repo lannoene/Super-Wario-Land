@@ -5,7 +5,7 @@
 
 //put walls & stuff here
 extern float cameraHorizOffsetPx;
-extern float cameraVertOffsetPx;
+extern int cameraVertOffsetPx;
 
 class Tile {
 public:

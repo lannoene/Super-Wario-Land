@@ -6,6 +6,8 @@
 #define NONE	0
 #define LEFT	1
 #define RIGHT	2
+#define UP		3
+#define DOWN	4
 
 #define GRAVITY	0.3
 
@@ -24,6 +26,7 @@ public:
 	void pressDown(SDL_Audio &Audio, int gameFrame);
 	void releaseDown(void);
 	void pressUp(SDL_Audio &Audio, int gameFrame);
+	void releaseUp(void);
 private:
 	float x, y, horizVect, vertVect;
 	int hitboxWidth, hitboxHeight, spriteWidth, spriteHeight, horizSpriteOffset, vertSpriteOffset, animTimer, animDelay, animState, prevAnimState, animDirection, moveStartTime, moveState;
@@ -38,6 +41,8 @@ private:
 	float playerJumpForce = 8;
 	int coins = 0;
 	int soundTimer = 0;
+	int vertCameraOffsetOffset = 250; //it's the offset of the offset!!!
+	int climbDir = NONE;
 	
 	void calcVertPhysics(SDL_Audio &Audio, int gameFrame);
 	void calcHorizPhysics(SDL_Audio &Audio, int gameFrame);
@@ -49,6 +54,8 @@ private:
 	inline void enterDoor(void);
 	inline void userCrouch(SDL_Audio &Audio, int gameFrame);
 	inline void userGroundPound(SDL_Audio &Audio);
+	void climbLadder(int dir);
+	void enterLadder(void);
 };
 
 enum GROUND_STATES {
@@ -65,7 +72,9 @@ enum ANIM_STATES {
 	ANIM_BASH_JUMP,
 	ANIM_GROUND_POUND,
 	ANIM_CROUCH_STAND,
-	ANIM_CROUCH_WALK
+	ANIM_CROUCH_WALK,
+	ANIM_CLIMB_STILL,
+	ANIM_CLIMB_MOVE
 };
 
 enum MOVE_STATES {
@@ -74,5 +83,6 @@ enum MOVE_STATES {
 	GROUND_POUND,
 	ROLL,
 	BUMP,
-	CROUCH
+	CROUCH,
+	CLIMB
 };

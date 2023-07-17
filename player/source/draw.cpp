@@ -65,6 +65,13 @@ SDL_Screen::SDL_Screen() {
 	loadTexture((char*)"romfs/sprite/wario_player_crouch1.png");
 	loadTexture((char*)"romfs/sprite/wario_player_crouch2.png");
 	loadTexture((char*)"romfs/sprite/wario_player_crouch3.png");
+	loadTexture((char*)"romfs/texture/grass/level_ground_grass_ladder.png");
+	loadTexture((char*)"romfs/sprite/wario_player_climb1.png");
+	loadTexture((char*)"romfs/sprite/wario_player_climb2.png");
+	loadTexture((char*)"romfs/sprite/wario_player_climb3.png");
+	loadTexture((char*)"romfs/sprite/wario_player_climb4.png");
+	loadTexture((char*)"romfs/sprite/wario_player_climb5.png");
+	loadTexture((char*)"romfs/sprite/wario_player_climb6.png");
 }
 
 SDL_Screen::~SDL_Screen() {

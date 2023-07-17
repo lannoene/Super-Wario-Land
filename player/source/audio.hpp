@@ -21,7 +21,8 @@ enum SFX_ID {
 	SFX_WALK,
 	SFX_DASH,
 	SFX_BREAK,
-	SFX_BUMP
+	SFX_BUMP,
+	SFX_CLIMB
 };
 
 enum MUSIC_ID {

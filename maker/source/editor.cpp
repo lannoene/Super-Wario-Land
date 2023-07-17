@@ -232,6 +232,9 @@ bool drawEditor(SDL_Screen &Scene) {
 		case TILE_PURPLE_SMALL_CRACKS:
 			snprintf(buffer, 50, "Current tile: Breakable_Small_Cracked");
 		break;
+		case TILE_GRASS_LADDER:
+			snprintf(buffer, 50, "Current tile: Dirt_Style_Ladder");
+		break;
 	}
 	Scene.drawText(buffer, 0, 60, 30);
 	

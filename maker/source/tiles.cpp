@@ -111,6 +111,9 @@ void Tile::draw(SDL_Screen &Scene) {
 		case TILE_PURPLE_SMALL_CRACKS:
 			Scene.drawImage(IMAGE_TILE_PURPLE_BLOCK_SMALL_CRACKS, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
 		break;
+		case TILE_GRASS_LADDER:
+			Scene.drawImage(IMAGE_TILE_GRASS_DIRT_LADDER, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
 	}
 }
 

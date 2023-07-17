@@ -14,6 +14,7 @@ SDL_Audio::SDL_Audio() {
 	loadSFX((char*)"romfs/audio/sfx/dash_normal.wav");
 	loadSFX((char*)"romfs/audio/sfx/break.wav");
 	loadSFX((char*)"romfs/audio/sfx/bump.wav");
+	loadSFX((char*)"romfs/audio/sfx/climb.wav");
 	loadMusic((char*)"romfs/audio/bgm/bgm_grass.mp3");
 }
 

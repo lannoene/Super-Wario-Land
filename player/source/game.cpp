@@ -79,6 +79,9 @@ bool drawGame(SDL_Screen &Scene, SDL_Audio &Audio) {
 					case SDL_SCANCODE_DOWN:
 						wario.releaseDown();
 					break;
+					case SDL_SCANCODE_UP:
+						wario.releaseUp();
+					break;
 					default:
 					break;
 				}

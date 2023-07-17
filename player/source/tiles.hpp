@@ -34,6 +34,7 @@ public:
 	bool colidable;
 	bool semisolid;
 	bool breakable;
+	bool ladder;
 	virtual void update(size_t frame, Player &player);
 	float tileVertVect = 0;
 	int tileId;
@@ -85,5 +86,6 @@ enum tileType {
 	TILE_LOG_BOTTOM_INNER_LEFT,
 	TILE_LOG_BOTTOM_INNER_RIGHT,
 	TILE_LOG_BOTTOM_FAR_RIGHT,
-	TILE_PURPLE_SMALL_CRACKS
+	TILE_PURPLE_SMALL_CRACKS,
+	TILE_GRASS_LADDER
 };

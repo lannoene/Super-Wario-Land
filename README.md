@@ -8,4 +8,4 @@ Z: shoulder bash <br>
 Right: Move right <br>
 Left: Move left <br>
 Down: Crouch (while on the ground) / Ground pound (while in the air) <br>
-Up: Climb ladders (not implimented yet) / Enter doors <br>
+Up: Climb ladders / Enter doors <br>

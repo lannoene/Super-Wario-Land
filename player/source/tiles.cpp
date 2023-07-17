@@ -13,6 +13,7 @@ Tile::Tile(int input_x, int input_y, int type) {
 	this->type = type;
 	this->semisolid = false;
 	this->breakable = false;
+	this->ladder = false;
 	this->tileId = tileCount;
 	++tileCount;
 	
@@ -43,6 +44,11 @@ Tile::Tile(int input_x, int input_y, int type) {
 			this->colidable = true;
 			this->breakable = true;
 		break;
+		case TILE_GRASS_LADDER:
+			this->visible = true;
+			this->colidable = false;
+			this->ladder = true;
+		break;
 	}
 }
 
@@ -61,7 +67,6 @@ void Tile::update(size_t frame, Player &player) {
 		case TILE_SPAWN_POINT:
 			if (frame == 0) {
 				player.setXYPos(this->x, this->y);
-				puts("done");
 			}
 		break;
 	}
@@ -158,6 +163,9 @@ void Tile::draw(SDL_Screen &Scene) {
 		break;
 		case TILE_PURPLE_SMALL_CRACKS:
 			Scene.drawImage(IMAGE_TILE_PURPLE_BLOCK_SMALL_CRACKS, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_GRASS_LADDER:
+			Scene.drawImage(IMAGE_TILE_GRASS_DIRT_LADDER, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
 		break;
 	}
 }

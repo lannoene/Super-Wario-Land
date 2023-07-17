@@ -202,6 +202,20 @@ void Player::draw(SDL_Screen &Scene, int gameFrame) {
 		case ANIM_BASH_JUMP:
 			Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_BASH_JUMP, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 		break;
+		case ANIM_GROUND_POUND:
+			Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_GROUND_POUND1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+		break;
+	}
+}
+
+inline void Player::userGroundPound(SDL_Audio &Audio) {
+	if (!isTouchingGround) {
+		this->vertVect = -10;
+		this->playerState = FALLING;
+	} else {
+		this->vertVect = 0;
+		this->moveState = NORMAL;
+		this->animState = ANIM_STAND;
 	}
 }
 
@@ -231,12 +245,20 @@ void Player::calcVertPhysics(SDL_Audio &Audio, int gameFrame) {
 							Audio.playSFX(SFX_LAND, 0);
 						}
 						this->vertVect = 0;
-						this->y =  Tile_array.data()[i]->y - this->hitboxHeight;
+						this->y = Tile_array.data()[i]->y - this->hitboxHeight;
 						this->playerState = STANDING;
 						if (this->moveState == NORMAL) {
 							this->animState = ANIM_STAND;
 						} else if (this->moveState == SHOULDER_BASH) {
 							this->animState = ANIM_BASH;
+						}
+						
+						if (Tile_array.data()[i]->breakable && this->moveState == GROUND_POUND && gameFrame - this->moveStartTime > 2) {
+							if (rand() % 2 == 0)
+								Tile_array.array_push(new PhysicsTile(Tile_array.data()[i]->x, Tile_array.data()[i]->y, GOLD_COIN));
+							delete Tile_array.data()[i];
+							Tile_array.array_splice(i, 1);
+							Audio.playSFX(SFX_BREAK, 0);
 						}
 						this->isTouchingGround = true;
 					}
@@ -265,21 +287,28 @@ void Player::calcVertPhysics(SDL_Audio &Audio, int gameFrame) {
 		}
 	}
 	
-	if (this->isTouchingGround == false && this->vertVect > -this->playerMaxVertSpeed) {
-		this->vertVect -= GRAVITY;
-		if (this->vertVect < 0) {
-			this->playerState = FALLING;
-		}
-	} else if (this->isTouchingGround == true) {
-		this->vertVect = 0;
-	}
-	
-	if (!this->isTouchingGround) {
-		if (this->moveState == NORMAL) {
-			this->animState = ANIM_JUMP;
-		} else if (this->moveState == SHOULDER_BASH) {
-			this->animState = ANIM_BASH_JUMP;
-		}
+	switch (this->moveState) {
+		default:
+			if (this->isTouchingGround == false && this->vertVect > -this->playerMaxVertSpeed) {
+				this->vertVect -= GRAVITY;
+				if (this->vertVect < 0) {
+					this->playerState = FALLING;
+				}
+			} else if (this->isTouchingGround == true) {
+				this->vertVect = 0;
+			}
+			
+			if (!this->isTouchingGround) {
+				if (this->moveState == NORMAL) {
+					this->animState = ANIM_JUMP;
+				} else if (this->moveState == SHOULDER_BASH) {
+					this->animState = ANIM_BASH_JUMP;
+				}
+			}
+		break;
+		case GROUND_POUND:
+			userGroundPound(Audio);
+		break;
 	}
 	
 	this->y -= this->vertVect;
@@ -288,10 +317,13 @@ void Player::calcVertPhysics(SDL_Audio &Audio, int gameFrame) {
 void Player::calcHorizPhysics(SDL_Audio &Audio, int gameFrame) {
 	switch (this->moveState) {
 		case NORMAL:
-			userMove(Audio);
+			userMoveHoriz(Audio);
 		break;
 		case SHOULDER_BASH:
 			calcShoulderBash(Audio, gameFrame);
+		break;
+		case GROUND_POUND:
+			this->horizVect = 0;
 		break;
 	}
 	
@@ -304,7 +336,10 @@ void Player::calcHorizPhysics(SDL_Audio &Audio, int gameFrame) {
 			if (this->moveState == NORMAL) {
 				horizVect = 0;
 			} else if (this->moveState == SHOULDER_BASH) {
-				vertVect = 3;
+				if (isTouchingGround)
+					vertVect = 3;
+				else
+					vertVect = -1;
 				horizVect = -5;
 				this->moveState = NORMAL;
 				this->playerState = JUMPING;
@@ -322,7 +357,10 @@ void Player::calcHorizPhysics(SDL_Audio &Audio, int gameFrame) {
 			if (this->moveState == NORMAL) {
 				horizVect = 0;
 			} else if (this->moveState == SHOULDER_BASH) {
-				vertVect = 3;
+				if (isTouchingGround)
+					vertVect = 3;
+				else
+					vertVect = -1;
 				horizVect = 5;
 				this->moveState = NORMAL;
 				this->playerState = JUMPING;
@@ -348,7 +386,7 @@ void Player::calcHorizPhysics(SDL_Audio &Audio, int gameFrame) {
 	x += horizVect;
 }
 
-inline void Player::userMove(SDL_Audio &Audio) {
+inline void Player::userMoveHoriz(SDL_Audio &Audio) {
 	if (this->playerPressedMoveDir == NONE) {
 		if (this->horizVect > 0) {
 			this->horizVect += -this->playerDeceleration[isTouchingGround];
@@ -483,7 +521,7 @@ void Player::enterDoor(void) {
 	}
 	if (ret != -1 && Tile_array.data()[ret]->getType() == TILE_DOOR && this->isTouchingGround == true) {
 		for (size_t i = 0; i < Tile_array.length(); i++) {
-			if (Tile_array.data()[i]->param1.doorId == Tile_array.data()[ret]->param2.destinationDoorId) {
+			if (Tile_array.data()[i]->param1.doorId == Tile_array.data()[ret]->param2.destinationDoorId && this->moveState != SHOULDER_BASH) {
 				this->setXYPos(Tile_array.data()[i]->x, Tile_array.data()[i]->y + -this->hitboxHeight + 100);
 				this->vertVect = 0;
 				this->horizVect = 0;
@@ -498,5 +536,13 @@ void Player::shoulderBash(SDL_Audio &Audio, int gameFrame) {
 		this->moveStartTime = gameFrame;
 		this->moveState = SHOULDER_BASH;
 		this->animState = ANIM_BASH;
+	}
+}
+
+void Player::pressDown(SDL_Audio &Audio, int gameFrame) {
+	if (!isTouchingGround && this->moveState == NORMAL) {
+		this->moveStartTime = gameFrame;
+		this->moveState = GROUND_POUND;
+		this->animState = ANIM_GROUND_POUND;
 	}
 }

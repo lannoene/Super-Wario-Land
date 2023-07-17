@@ -4,8 +4,8 @@ This game is currently unfinished. You can eventually expect the full Wario Land
 ## Controls <br>
 Space: Start game <br>
 X: jump <br>
-Z: shoulder bash (not implimented yet) <br>
+Z: shoulder bash <br>
 Right: Move right <br>
 Left: Move left <br>
-Down: Crouch (not implimented yet) <br>
+Down: Crouch (not implimented yet) / Ground Pound <br>
 Up: Enter doors <br>

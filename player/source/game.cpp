@@ -49,6 +49,9 @@ bool drawGame(SDL_Screen &Scene, SDL_Audio &Audio) {
 					case SDL_SCANCODE_LEFT:
 						wario.moveHoriz(LEFT, Audio);
 					break;
+					case SDL_SCANCODE_DOWN:
+						wario.pressDown(Audio, gameFrame);
+					break;
 					case SDL_SCANCODE_D:
 						showDebugInfo = !showDebugInfo;
 					break;

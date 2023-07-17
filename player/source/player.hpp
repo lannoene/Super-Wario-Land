@@ -22,6 +22,7 @@ public:
 	int getCoinCount(void);
 	void enterDoor(void);
 	void shoulderBash(SDL_Audio &Audio, int gameFrame);
+	void pressDown(SDL_Audio &Audio, int gameFrame);
 private:
 	float x, y, horizVect, vertVect;
 	int hitboxWidth, hitboxHeight, spriteWidth, spriteHeight, horizSpriteOffset, vertSpriteOffset, animTimer, animDelay, animState, prevAnimState, animDirection, moveStartTime, moveState;
@@ -41,8 +42,10 @@ private:
 	int playerCheckVertBoundries(float your_x, float your_y, float your_width, float your_height);
 	int playerCheckHorizBoundries(float your_x, float your_y, float your_width, float your_height, bool mustColide);
 	void collectCoin(int amount);
-	inline void userMove(SDL_Audio &Audio);
+	inline void userMoveHoriz(SDL_Audio &Audio);
 	inline void calcShoulderBash(SDL_Audio &Audio, int gameFrame);
+	
+	inline void userGroundPound(SDL_Audio &Audio);
 };
 
 enum GROUND_STATES {
@@ -56,7 +59,8 @@ enum ANIM_STATES {
 	ANIM_WALK,
 	ANIM_JUMP,
 	ANIM_BASH,
-	ANIM_BASH_JUMP
+	ANIM_BASH_JUMP,
+	ANIM_GROUND_POUND
 };
 
 enum MOVE_STATES {

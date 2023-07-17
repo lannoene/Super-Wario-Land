@@ -20,14 +20,16 @@ public:
 	void stopMoving(int dir);
 	void setXYPos(int x, int y);
 	int getCoinCount(void);
-	void enterDoor(void);
 	void shoulderBash(SDL_Audio &Audio, int gameFrame);
 	void pressDown(SDL_Audio &Audio, int gameFrame);
+	void releaseDown(void);
+	void pressUp(SDL_Audio &Audio, int gameFrame);
 private:
 	float x, y, horizVect, vertVect;
 	int hitboxWidth, hitboxHeight, spriteWidth, spriteHeight, horizSpriteOffset, vertSpriteOffset, animTimer, animDelay, animState, prevAnimState, animDirection, moveStartTime, moveState;
 	bool isTouchingGround;
-	int playerState;
+	bool releasingCrouch;
+	int playerGroundState;
 	int playerPressedMoveDir;
 	float playerAcceleration = 0.3;
 	float playerDeceleration[2];
@@ -44,7 +46,8 @@ private:
 	void collectCoin(int amount);
 	inline void userMoveHoriz(SDL_Audio &Audio);
 	inline void calcShoulderBash(SDL_Audio &Audio, int gameFrame);
-	
+	inline void enterDoor(void);
+	inline void userCrouch(SDL_Audio &Audio, int gameFrame);
 	inline void userGroundPound(SDL_Audio &Audio);
 };
 
@@ -60,7 +63,9 @@ enum ANIM_STATES {
 	ANIM_JUMP,
 	ANIM_BASH,
 	ANIM_BASH_JUMP,
-	ANIM_GROUND_POUND
+	ANIM_GROUND_POUND,
+	ANIM_CROUCH_STAND,
+	ANIM_CROUCH_WALK
 };
 
 enum MOVE_STATES {
@@ -68,5 +73,6 @@ enum MOVE_STATES {
 	SHOULDER_BASH,
 	GROUND_POUND,
 	ROLL,
-	BUMP
+	BUMP,
+	CROUCH
 };

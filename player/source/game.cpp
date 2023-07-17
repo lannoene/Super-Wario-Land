@@ -35,6 +35,8 @@ bool drawGame(SDL_Screen &Scene, SDL_Audio &Audio) {
 				return false;
 			break;
 			case SDL_KEYDOWN:
+				if (event.key.repeat)
+					break;
 				switch (event.key.keysym.scancode) {
 					case SDL_SCANCODE_ESCAPE:
 						wario.stopMoving(LEFT);
@@ -57,7 +59,7 @@ bool drawGame(SDL_Screen &Scene, SDL_Audio &Audio) {
 						showDebugInfo = !showDebugInfo;
 					break;
 					case SDL_SCANCODE_UP:
-						wario.enterDoor();
+						wario.pressUp(Audio, gameFrame);
 					break;
 					case SDL_SCANCODE_Z:
 						wario.shoulderBash(Audio, gameFrame);
@@ -73,6 +75,9 @@ bool drawGame(SDL_Screen &Scene, SDL_Audio &Audio) {
 					break;
 					case SDL_SCANCODE_LEFT:
 						wario.stopMoving(LEFT);
+					break;
+					case SDL_SCANCODE_DOWN:
+						wario.releaseDown();
 					break;
 					default:
 					break;

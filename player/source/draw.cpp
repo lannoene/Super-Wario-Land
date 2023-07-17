@@ -62,6 +62,9 @@ SDL_Screen::SDL_Screen() {
 	loadTexture((char*)"romfs/sprite/wario_player_bash8.png");
 	loadTexture((char*)"romfs/sprite/wario_player_bash_jump.png");
 	loadTexture((char*)"romfs/sprite/wario_player_ground_pound1.png");
+	loadTexture((char*)"romfs/sprite/wario_player_crouch1.png");
+	loadTexture((char*)"romfs/sprite/wario_player_crouch2.png");
+	loadTexture((char*)"romfs/sprite/wario_player_crouch3.png");
 }
 
 SDL_Screen::~SDL_Screen() {

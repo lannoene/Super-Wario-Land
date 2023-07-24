@@ -866,6 +866,7 @@ void Player::enterWater(SDL_Audio &Audio, int gameFrame) {
 					
 					return;
 				} else {
+					this->playerMaxHorizSpeed = 6; // default
 					this->jumpingOutOfWater = false;
 					this->moveState = SWIM;
 					this->hitboxHeight = 45;

@@ -72,6 +72,16 @@ SDL_Screen::SDL_Screen() {
 	loadTexture((char*)"romfs/sprite/wario_player_climb4.png");
 	loadTexture((char*)"romfs/sprite/wario_player_climb5.png");
 	loadTexture((char*)"romfs/sprite/wario_player_climb6.png");
+	loadTexture((char*)"romfs/texture/grass/level_water_inside.png");
+	loadTexture((char*)"romfs/texture/grass/level_water_top1.png");
+	loadTexture((char*)"romfs/texture/grass/level_water_top2.png");
+	loadTexture((char*)"romfs/texture/grass/level_water_top3.png");
+	loadTexture((char*)"romfs/texture/grass/level_water_top4.png");
+	loadTexture((char*)"romfs/sprite/wario_player_swim1.png");
+	loadTexture((char*)"romfs/sprite/wario_player_swim2.png");
+	loadTexture((char*)"romfs/sprite/wario_player_swim3.png");
+	loadTexture((char*)"romfs/sprite/wario_player_swim4.png");
+	loadTexture((char*)"romfs/sprite/wario_player_swim5.png");
 }
 
 SDL_Screen::~SDL_Screen() {

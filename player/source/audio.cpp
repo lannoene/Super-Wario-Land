@@ -15,6 +15,9 @@ SDL_Audio::SDL_Audio() {
 	loadSFX((char*)"romfs/audio/sfx/break.wav");
 	loadSFX((char*)"romfs/audio/sfx/bump.wav");
 	loadSFX((char*)"romfs/audio/sfx/climb.wav");
+	loadSFX((char*)"romfs/audio/sfx/crouch_walk.wav");
+	loadSFX((char*)"romfs/audio/sfx/land_in_water.wav");
+	loadSFX((char*)"romfs/audio/sfx/swimming.wav");
 	loadMusic((char*)"romfs/audio/bgm/bgm_grass.mp3");
 }
 

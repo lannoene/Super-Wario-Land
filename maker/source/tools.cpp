@@ -34,7 +34,7 @@ void tools::decodeLevelFileIntoMemory(std::string levelPath) {
 	
 	//decode array-elements
 	for (int i = 0; i < LevelArray.length(); i++) {
-		std::cout << *LevelArray.data()[i] << std::endl;
+		//std::cout << *LevelArray.data()[i] << std::endl;
 	}
 	
 	
@@ -53,7 +53,7 @@ void tools::decodeLevelFileIntoMemory(std::string levelPath) {
 	
 	const int entriesNum = 5; // >=3 <<<<----- a face!!!!! =3
 	for (int j = 0; j < LevelEntries.length()/entriesNum; j++) {
-		std::cout << std::stoi(*LevelEntries.data()[j]) << " " << std::stoi(*LevelEntries.data()[j*entriesNum + 1]) << std::endl;
+		//std::cout << std::stoi(*LevelEntries.data()[j]) << " " << std::stoi(*LevelEntries.data()[j*entriesNum + 1]) << std::endl;
 		Tile_array.array_push(new Tile(std::stoi(*LevelEntries.data()[j*entriesNum]), std::stoi(*LevelEntries.data()[j*entriesNum + 1]), std::stoi(*LevelEntries.data()[j*entriesNum + 2])));
 	
 		switch (std::stoi(*LevelEntries.data()[j*entriesNum + 2])) {

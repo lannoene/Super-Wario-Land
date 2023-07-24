@@ -14,8 +14,12 @@ Tile::Tile(int input_x, int input_y, int type) {
 	this->semisolid = false;
 	this->breakable = false;
 	this->ladder = false;
+	this->visible = true;
+	this->colidable = true;
+	this->water = false;
 	this->tileId = tileCount;
 	++tileCount;
+	this->animDelay = 9999999;
 	
 	switch (type) {
 		default:
@@ -31,23 +35,23 @@ Tile::Tile(int input_x, int input_y, int type) {
 		case TILE_DOOR_BOTTOM:
 		case TILE_DIRT_BG:
 		case TILE_DIRT_BG_SHADOW:
+		case TILE_WATER_TOP:
 			this->colidable = false;
 			this->visible = true;
 		break;
 		case TILE_DIRT_SEMISOLID:
-			this->visible = true;
 			this->semisolid = true;
-			this->colidable = true;
 		break;
 		case TILE_PURPLE_SMALL_CRACKS:
-			this->visible = true;
-			this->colidable = true;
 			this->breakable = true;
 		break;
 		case TILE_GRASS_LADDER:
-			this->visible = true;
 			this->colidable = false;
 			this->ladder = true;
+		break;
+		case TILE_WATER_MIDDLE:
+			this->water = true;
+			this->colidable = false; // turn off default colisions
 		break;
 	}
 }
@@ -72,9 +76,12 @@ void Tile::update(size_t frame, Player &player) {
 	}
 }
 
-void Tile::draw(SDL_Screen &Scene) {
+void Tile::draw(SDL_Screen &Scene, int gameFrame) {
 	if (this->visible == false)
 		return;
+	
+	if (gameFrame % this->animDelay == 0)
+		++this->animTimer;
 	
 	switch (type) {
 		default:
@@ -166,6 +173,29 @@ void Tile::draw(SDL_Screen &Scene) {
 		break;
 		case TILE_GRASS_LADDER:
 			Scene.drawImage(IMAGE_TILE_GRASS_DIRT_LADDER, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_WATER_MIDDLE:
+			Scene.drawImage(IMAGE_TILE_WATER_MIDDLE, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_WATER_TOP:
+			this->animDelay = 7;
+			switch (this->animTimer) {
+				default:
+					this->animTimer = 0;
+					// fallthrough
+				case 0:
+					Scene.drawImage(IMAGE_TILE_WATER_TOP_1, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+				break;
+				case 1:
+					Scene.drawImage(IMAGE_TILE_WATER_TOP_2, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+				break;
+				case 2:
+					Scene.drawImage(IMAGE_TILE_WATER_TOP_3, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+				break;
+				case 3:
+					Scene.drawImage(IMAGE_TILE_WATER_TOP_4, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+				break;
+			}
 		break;
 	}
 }

@@ -6,7 +6,7 @@
 #define NONE	0
 #define LEFT	1
 #define RIGHT	2
-#define UP		3
+#define UP  	3
 #define DOWN	4
 
 #define GRAVITY	0.3
@@ -32,6 +32,7 @@ private:
 	int hitboxWidth, hitboxHeight, spriteWidth, spriteHeight, horizSpriteOffset, vertSpriteOffset, animTimer, animDelay, animState, prevAnimState, animDirection, moveStartTime, moveState;
 	bool isTouchingGround;
 	bool releasingCrouch;
+	bool jumpingOutOfWater = false;
 	int playerGroundState;
 	int playerPressedMoveDir;
 	float playerAcceleration = 0.3;
@@ -39,10 +40,13 @@ private:
 	float playerMaxHorizSpeed = 6;
 	float playerMaxVertSpeed = 10;
 	float playerJumpForce = 8;
+	float maxHorizSwimSpeed = 3;
+	float maxVertSwimSpeed = 3;
+	float waterAcceleration = 0.5;
 	int coins = 0;
 	int soundTimer = 0;
 	int vertCameraOffsetOffset = 250; //it's the offset of the offset!!!
-	int climbDir = NONE;
+	int moveDir = NONE;
 	
 	void calcVertPhysics(SDL_Audio &Audio, int gameFrame);
 	void calcHorizPhysics(SDL_Audio &Audio, int gameFrame);
@@ -56,6 +60,12 @@ private:
 	inline void userGroundPound(SDL_Audio &Audio);
 	void climbLadder(int dir);
 	void enterLadder(void);
+	void enterWater(SDL_Audio &Audio, int gameFrame);
+	void exitWater(void);
+	void swim(SDL_Audio &Audio, int gameFrame);
+	void changeSwimDirection(int dir);
+	void stopSwimDir(int dir);
+	void jumpOutOfWater(void);
 };
 
 enum GROUND_STATES {
@@ -74,7 +84,10 @@ enum ANIM_STATES {
 	ANIM_CROUCH_STAND,
 	ANIM_CROUCH_WALK,
 	ANIM_CLIMB_STILL,
-	ANIM_CLIMB_MOVE
+	ANIM_CLIMB_MOVE,
+	ANIM_SWIM_DEEP_STILL,
+	ANIM_SWIM_DEEP_MOVE,
+	ANIM_SWIM_TOP,
 };
 
 enum MOVE_STATES {
@@ -84,5 +97,6 @@ enum MOVE_STATES {
 	ROLL,
 	BUMP,
 	CROUCH,
-	CLIMB
+	CLIMB,
+	SWIM
 };

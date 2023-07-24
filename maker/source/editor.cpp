@@ -7,10 +7,17 @@
 #include "tools.hpp"
 #include "popups.hpp"
 
+#define LEFT	false
+#define RIGHT	true
+
 float cameraHorizOffsetPx = 0;
 float cameraVertOffsetPx = 0;
 SquishyArray <Tile*>Tile_array(0);
 int currentTile = 0;
+bool mousePushed = false;
+bool mouseButton;
+int coord_click_x;
+int coord_click_y;
 
 bool drawEditor(SDL_Screen &Scene) {
 	SDL_Event event;
@@ -65,9 +72,11 @@ bool drawEditor(SDL_Screen &Scene) {
 				}
 			break;
 			case SDL_MOUSEBUTTONDOWN: {
-				int coord_click_x = event.button.x;
-				int coord_click_y = event.button.y;
+				coord_click_x = event.button.x;
+				coord_click_y = event.button.y;
 				if (SDL_BUTTON_LEFT == event.button.button) {
+					mousePushed = true;
+					mouseButton = LEFT;
 					Tile_array.array_push(new Tile((floor((coord_click_x - cameraHorizOffsetPx)/50)*50), floor((coord_click_y - cameraVertOffsetPx)/50)*50, currentTile));
 					Tile_array.data()[Tile_array.length() - 1]->param1.dummyVar = -9999;
 					Tile_array.data()[Tile_array.length() - 1]->param2.dummyVar = -9999;
@@ -75,6 +84,7 @@ bool drawEditor(SDL_Screen &Scene) {
 					
 					switch (currentTile) {
 						case TILE_DOOR: {
+							mousePushed = false;
 							std::string tempDoorIdText = createPopup(Scene, (char*)"Enter door id");
 							std::string tempDestDoorIdText = createPopup(Scene, (char*)"Enter destination door id");
 							
@@ -105,6 +115,8 @@ bool drawEditor(SDL_Screen &Scene) {
 					
 				}
 				if (SDL_BUTTON_RIGHT == event.button.button) {
+					mousePushed = true;
+					mouseButton = RIGHT;
 					for (int i = Tile_array.length() - 1; i >= 0; i--) {
 						if (Tile_array.data()[i]->x == floor(-cameraHorizOffsetPx + (coord_click_x/50)*50) && Tile_array.data()[i]->y == floor((coord_click_y - cameraVertOffsetPx)/50)*50) {
 							delete Tile_array.data()[i];
@@ -124,6 +136,46 @@ bool drawEditor(SDL_Screen &Scene) {
 				}
 			}
 			break;
+			case SDL_MOUSEMOTION: {
+				if (mousePushed && mouseButton == LEFT) {
+					coord_click_x += event.motion.xrel;
+					coord_click_y += event.motion.yrel;
+					
+					bool tileThere = false;
+				
+					for (int i = Tile_array.length() - 1; i >= 0; i--) {
+						if (Tile_array.data()[i]->x == floor(-cameraHorizOffsetPx + (coord_click_x/50)*50) && Tile_array.data()[i]->y == floor((coord_click_y - cameraVertOffsetPx)/50)*50) {
+							tileThere = true;
+							break;
+						}
+					}
+					
+					if (!tileThere) {
+						Tile_array.array_push(new Tile((floor((coord_click_x - cameraHorizOffsetPx)/50)*50), floor((coord_click_y - cameraVertOffsetPx)/50)*50, currentTile));
+						Tile_array.data()[Tile_array.length() - 1]->param1.dummyVar = -9999;
+						Tile_array.data()[Tile_array.length() - 1]->param2.dummyVar = -9999;
+						Tile_array.data()[Tile_array.length() - 1]->param3.dummyVar = -9999;
+					}
+				} else if (mousePushed && mouseButton == RIGHT) {
+					coord_click_x += event.motion.xrel;
+					coord_click_y += event.motion.yrel;
+					
+					for (int i = Tile_array.length() - 1; i >= 0; i--) {
+						if (Tile_array.data()[i]->x == floor(-cameraHorizOffsetPx + (coord_click_x/50))*50 && Tile_array.data()[i]->y == floor((coord_click_y - cameraVertOffsetPx)/50)*50) {
+							delete Tile_array.data()[i];
+							Tile_array.array_splice(i, 1);
+							break;
+						}
+					}
+					
+				} else {
+					SDL_GetMouseState(&coord_click_x, &coord_click_y);
+				}
+			}
+			break;
+			case SDL_MOUSEBUTTONUP:
+				mousePushed = false;
+			break;
 		}
 	}
 	
@@ -134,6 +186,108 @@ bool drawEditor(SDL_Screen &Scene) {
 	
 	for (int i = 0; i < Tile_array.length(); i++) {
 		Tile_array.data()[i]->draw(Scene);
+	}
+	
+	switch (currentTile) {
+		default:
+			Scene.drawImage(IMAGE_UNKNOWN, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_GRASS_TOP:
+			Scene.drawImage(IMAGE_TILE_TOP_GRASS, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_GRASS_TOP_RIGHT:
+			Scene.drawImage(IMAGE_TILE_TOP_GRASS_RIGHT, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_GRASS_TOP_LEFT:
+			Scene.drawImage(IMAGE_TILE_TOP_GRASS_LEFT, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_GRASS_MIDDLE_MIDDLE:
+			Scene.drawImage(IMAGE_TILE_MIDDLE_GRASS_MIDDLE, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_GRASS_MIDDLE_RIGHT:
+			Scene.drawImage(IMAGE_TILE_MIDDLE_GRASS_RIGHT, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_GRASS_MIDDLE_LEFT:
+			Scene.drawImage(IMAGE_TILE_MIDDLE_GRASS_LEFT, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_GRASS_BOTTOM_MIDDLE:
+			Scene.drawImage(IMAGE_TILE_BOTTOM_GRASS_MIDDLE, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_GRASS_BOTTOM_RIGHT:
+			Scene.drawImage(IMAGE_TILE_BOTTOM_GRASS_RIGHT, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_GRASS_BOTTOM_LEFT:
+			Scene.drawImage(IMAGE_TILE_BOTTOM_GRASS_LEFT, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_GRASS_CONNECTOR_TOP_TO_RIGHT:
+			Scene.drawImage(IMAGE_TILE_CONNECTOR_1, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_GRASS_CONNECTOR_TOP_TO_LEFT:
+			Scene.drawImage(IMAGE_TILE_CONNECTOR_2, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_GRASS_CONNECTOR_BOTTOM_TO_RIGHT:
+			Scene.drawImage(IMAGE_TILE_CONNECTOR_3, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_GRASS_CONNECTOR_BOTTOM_TO_LEFT:
+			Scene.drawImage(IMAGE_TILE_CONNECTOR_4, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case GOLD_COIN:
+			Scene.drawImage(GOLD_COIN_ROTATION_1, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_DOOR:
+			Scene.drawImage(IMAGE_DOOR_TOP, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_DOOR_BOTTOM:
+			Scene.drawImage(IMAGE_DOOR_BOTTOM, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_SPAWN_POINT:
+			Scene.drawImage(IMAGE_SPAWN_POINT, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_DIRT_BG:
+			Scene.drawImage(IMAGE_TILE_GRASS_DIRT_BG, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_DIRT_BG_SHADOW:
+			Scene.drawImage(IMAGE_TILE_GRASS_DIRT_BG_SHADOW, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_DIRT_SEMISOLID:
+			Scene.drawImage(IMAGE_TILE_GRASS_SEM_PLT, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_LOG_MIDDLE_FAR_LEFT:
+			Scene.drawImage(IMAGE_TILE_MIDDLE_LOG_FAR_LEFT, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_LOG_MIDDLE_INNER_LEFT:
+			Scene.drawImage(IMAGE_TILE_MIDDLE_LOG_INNER_LEFT, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_LOG_MIDDLE_INNER_RIGHT:
+			Scene.drawImage(IMAGE_TILE_MIDDLE_LOG_INNER_RIGHT, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_LOG_MIDDLE_FAR_RIGHT:
+			Scene.drawImage(IMAGE_TILE_MIDDLE_LOG_FAR_RIGHT, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_LOG_BOTTOM_FAR_LEFT:
+			Scene.drawImage(IMAGE_TILE_BOTTOM_LOG_FAR_LEFT, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_LOG_BOTTOM_INNER_LEFT:
+			Scene.drawImage(IMAGE_TILE_BOTTOM_LOG_INNER_LEFT, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_LOG_BOTTOM_INNER_RIGHT:
+			Scene.drawImage(IMAGE_TILE_BOTTOM_LOG_INNER_RIGHT, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_LOG_BOTTOM_FAR_RIGHT:
+			Scene.drawImage(IMAGE_TILE_BOTTOM_LOG_FAR_RIGHT, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_PURPLE_SMALL_CRACKS:
+			Scene.drawImage(IMAGE_TILE_PURPLE_BLOCK_SMALL_CRACKS, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_GRASS_LADDER:
+			Scene.drawImage(IMAGE_TILE_GRASS_DIRT_LADDER, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_WATER_MIDDLE:
+			Scene.drawImage(IMAGE_TILE_WATER_MIDDLE, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
+		case TILE_WATER_TOP:
+			Scene.drawImage(IMAGE_TILE_WATER_TOP, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
 	}
 	
 	char buffer[50];
@@ -234,6 +388,12 @@ bool drawEditor(SDL_Screen &Scene) {
 		break;
 		case TILE_GRASS_LADDER:
 			snprintf(buffer, 50, "Current tile: Dirt_Style_Ladder");
+		break;
+		case TILE_WATER_MIDDLE:
+			snprintf(buffer, 50, "Current tile: Water_Middle");
+		break;
+		case TILE_WATER_TOP:
+			snprintf(buffer, 50, "Current tile: Water_Top (not colidable)");
 		break;
 	}
 	Scene.drawText(buffer, 0, 60, 30);

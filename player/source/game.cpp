@@ -100,7 +100,7 @@ bool drawGame(SDL_Screen &Scene, SDL_Audio &Audio) {
 	
 	for (size_t i = 0; i < Tile_array.length(); i++) {
 		Tile_array.data()[i]->update((size_t)gameFrame, wario);
-		Tile_array.data()[i]->draw(Scene);
+		Tile_array.data()[i]->draw(Scene, gameFrame);
 	}
 	wario.update(Audio, gameFrame);
 	wario.draw(Scene, gameFrame);

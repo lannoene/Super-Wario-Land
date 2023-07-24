@@ -29,18 +29,20 @@ public:
 	
 	Tile(int input_x, int input_y, int type);
 	virtual ~Tile();
-	void draw(SDL_Screen &Scene);
+	void draw(SDL_Screen &Scene, int gameFrame);
 	int getType(void);
 	bool colidable;
 	bool semisolid;
 	bool breakable;
 	bool ladder;
+	bool visible;
+	bool water;
 	virtual void update(size_t frame, Player &player);
 	float tileVertVect = 0;
 	int tileId;
 protected:
 	int type;
-	bool visible;
+	int animTimer, animDelay;
 };
 
 class PhysicsTile : public Tile {
@@ -87,5 +89,7 @@ enum tileType {
 	TILE_LOG_BOTTOM_INNER_RIGHT,
 	TILE_LOG_BOTTOM_FAR_RIGHT,
 	TILE_PURPLE_SMALL_CRACKS,
-	TILE_GRASS_LADDER
+	TILE_GRASS_LADDER,
+	TILE_WATER_MIDDLE,
+	TILE_WATER_TOP,
 };

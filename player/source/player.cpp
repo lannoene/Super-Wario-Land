@@ -53,6 +53,7 @@ void Player::update(SDL_Audio &Audio, int gameFrame) {
 		}
 	}
 	
+	enterWater(Audio, gameFrame);
 	calcVertPhysics(Audio, gameFrame);
 	calcHorizPhysics(Audio, gameFrame);
 	
@@ -263,6 +264,29 @@ void Player::draw(SDL_Screen &Scene, int gameFrame) {
 				break;
 			}
 		break;
+		case ANIM_SWIM_DEEP_MOVE:
+			this->animDelay = 5;
+			switch (this->animTimer) {
+				default:
+					this->animTimer = 0;
+					// fallthrough
+				case 0:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_SWIM_1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 1:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_SWIM_2, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 2:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_SWIM_3, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 3:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_SWIM_4, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+				case 4:
+					Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_SWIM_5, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+				break;
+			}
+		break;
 		case ANIM_CLIMB_STILL:
 			Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_CLIMB_4, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, false);
 		break;
@@ -274,6 +298,9 @@ void Player::draw(SDL_Screen &Scene, int gameFrame) {
 		break;
 		case ANIM_CROUCH_STAND:
 			Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_CROUCH_1, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
+		break;
+		case ANIM_SWIM_DEEP_STILL:
+			Scene.drawImageWithDir(IMAGE_PLAYER_WARIO_SWIM_4, this->x + cameraHorizOffsetPx - this->horizSpriteOffset, this->y - this->vertSpriteOffset + cameraVertOffsetPx, this->spriteWidth, this->spriteHeight, this->animDirection == RIGHT ? false : true);
 		break;
 	}
 }
@@ -317,7 +344,7 @@ void Player::calcVertPhysics(SDL_Audio &Audio, int gameFrame) {
 			userGroundPound(Audio);
 		break;
 		case CLIMB:
-			if (this->climbDir == UP) {
+			if (this->moveDir == UP) {
 				this->vertVect = 3;
 				if (this->animState == ANIM_CLIMB_MOVE) {
 					if (this->soundTimer >= 15) {
@@ -326,7 +353,7 @@ void Player::calcVertPhysics(SDL_Audio &Audio, int gameFrame) {
 					} else
 						++this->soundTimer;
 				}
-			} else if (this->climbDir == DOWN) {
+			} else if (this->moveDir == DOWN) {
 				this->vertVect = -3;
 				if (this->animState == ANIM_CLIMB_MOVE) {
 					if (this->soundTimer >= 15) {
@@ -335,14 +362,14 @@ void Player::calcVertPhysics(SDL_Audio &Audio, int gameFrame) {
 					} else
 						++this->soundTimer;
 				}
-			} else if (this->climbDir == NONE) {
+			} else if (this->moveDir == NONE) {
 				this->vertVect = 0;
 			}
 			this->playerGroundState = STANDING;
 			this->moveState = NORMAL;
 			for (size_t i = 0; i < Tile_array.length(); i++) {
 				if (tools::checkVertBounds(this->x, this->y - this->vertVect, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-					if ((Tile_array.data()[i]->colidable && this->climbDir != UP && !Tile_array.data()[i]->semisolid) || (Tile_array.data()[i]->semisolid && this->y + (float)this->hitboxHeight <= Tile_array.data()[i]->y) ) {
+					if ((Tile_array.data()[i]->colidable && this->moveDir != UP && !Tile_array.data()[i]->semisolid) || (Tile_array.data()[i]->semisolid && this->y + (float)this->hitboxHeight <= Tile_array.data()[i]->y) ) {
 						this->moveState = NORMAL;
 						this->vertVect = 0;
 						this->y = Tile_array.data()[i]->y - this->hitboxHeight;
@@ -363,6 +390,9 @@ void Player::calcVertPhysics(SDL_Audio &Audio, int gameFrame) {
 					}
 				}
 			}
+		break;
+		case SWIM:
+			swim(Audio, gameFrame); // vert gets run before horiz so i put swim func here as a placeholder instead of in horiz cuz i need to calc it here first!!!! it wouldn't matter tho if it used standard vert gravity, but sometimes i do, sometimes i don't!
 		break;
 	}
 	
@@ -390,7 +420,6 @@ void Player::calcVertPhysics(SDL_Audio &Audio, int gameFrame) {
 			if (Tile_array.data()[i]->colidable == true) {
 				if (isTouchingGround == false && this->playerGroundState == FALLING) {
 					if (!Tile_array.data()[i]->semisolid || (Tile_array.data()[i]->semisolid && this->y + (float)this->hitboxHeight <= Tile_array.data()[i]->y)) {
-						//vertVect = -(Tile_array.data()[intersetingRet]->y - this->y - hitboxHeight);//changed this from setting your vect to setting your pos so that colision bugs aren't so catastrophic
 						if (vertVect <= -playerMaxVertSpeed*0.6 && horizVect == 0) {
 							Audio.playSFX(SFX_LAND, 0);
 						}
@@ -421,7 +450,6 @@ void Player::calcVertPhysics(SDL_Audio &Audio, int gameFrame) {
 		if (tools::checkVertBounds(this->x, this->y - vertVect - 1, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
 			if (Tile_array.data()[i]->colidable == true) {
 				if (isTouchingGround == false && playerGroundState == JUMPING && !Tile_array.data()[i]->semisolid) {
-					//vertVect = -(Tile_array.data()[intersectingBottomForCeling]->y - this->y + Tile_array.data()[intersectingBottomForCeling]->height) - 1;
 					this->y = Tile_array.data()[i]->y + Tile_array.data()[i]->height + 1;
 					Tile_array.data()[i]->tileVertVect = 0;
 					this->vertVect = 0;
@@ -441,7 +469,6 @@ void Player::calcVertPhysics(SDL_Audio &Audio, int gameFrame) {
 	
 	
 	if (this->y > this->vertCameraOffsetOffset) {
-		//cameraHorizOffsetPx -= horizVect;
 		cameraVertOffsetPx = -this->y + this->vertCameraOffsetOffset;
 	} else {
 		cameraVertOffsetPx = 0;
@@ -464,6 +491,8 @@ void Player::calcHorizPhysics(SDL_Audio &Audio, int gameFrame) {
 		break;
 		case CLIMB:
 			this->horizVect = 0;
+		break;
+		case SWIM:
 		break;
 	}
 	
@@ -558,8 +587,11 @@ inline void Player::userMoveHoriz(SDL_Audio &Audio) {
 		} else {
 			horizVect = playerMaxHorizSpeed;
 		}
-		if (this->soundTimer >= 40 && this->isTouchingGround == true) {
+		if (this->soundTimer >= 40 && this->isTouchingGround == true && this->moveState == NORMAL) {
 			Audio.playSFX(SFX_WALK, 0);
+			this->soundTimer = 0;
+		} else if (this->soundTimer >= 35 && this->isTouchingGround == true && this->moveState == CROUCH) {
+			Audio.playSFX(SFX_CROUCH_WALK, 0);
 			this->soundTimer = 0;
 		}
 		
@@ -577,10 +609,14 @@ inline void Player::userMoveHoriz(SDL_Audio &Audio) {
 			horizVect = -playerMaxHorizSpeed;
 		}
 		
-		if (this->soundTimer >= 40 && this->isTouchingGround == true) {
+		if (this->soundTimer >= 40 && this->isTouchingGround == true && this->moveState == NORMAL) {
 			Audio.playSFX(SFX_WALK, 0);
 			this->soundTimer = 0;
+		} else if (this->soundTimer >= 35 && this->isTouchingGround == true && this->moveState == CROUCH) {
+			Audio.playSFX(SFX_CROUCH_WALK, 0);
+			this->soundTimer = 0;
 		}
+		
 		++this->soundTimer;
 		
 		if (this->isTouchingGround && this->moveState == NORMAL)
@@ -616,7 +652,7 @@ inline void Player::calcShoulderBash(SDL_Audio &Audio, int gameFrame) {
 }
 
 void Player::jump(SDL_Audio &Audio) {
-	if (this->isTouchingGround == true) {
+	if (this->isTouchingGround == true && this->moveState != SWIM) {
 		vertVect = playerJumpForce;
 		isTouchingGround = false;
 		playerGroundState = JUMPING;
@@ -627,6 +663,8 @@ void Player::jump(SDL_Audio &Audio) {
 		playerGroundState = JUMPING;
 		Audio.playSFX(SFX_JUMP, 0);
 		this->moveState = NORMAL;
+	} else if (this->moveState == SWIM) {
+		jumpOutOfWater();
 	}
 }
 
@@ -638,6 +676,8 @@ void Player::moveHoriz(int dir, SDL_Audio &Audio) {
 	if (dir != this->playerPressedMoveDir && dir != this->animDirection && this->moveState == SHOULDER_BASH) {
 		this->moveState = NORMAL;
 		this->horizVect = horizVect*0.5;// otherwise you would keep your momentum after canceling a bash and i found that dum. your canceled horizvect at max charge would be 3.5
+	} else if (this->moveState == SWIM) {
+		changeSwimDirection(dir);
 	}
 	
 	this->playerPressedMoveDir = dir;
@@ -646,8 +686,11 @@ void Player::moveHoriz(int dir, SDL_Audio &Audio) {
 }
 
 void Player::stopMoving(int dir) {
-	if (this->playerPressedMoveDir == dir) {
+	if (this->playerPressedMoveDir == dir && this->moveState != SWIM) {
 		this->playerPressedMoveDir = NONE;
+	} else if (this->moveState == SWIM) {
+		stopSwimDir(dir);
+		playerPressedMoveDir = NONE;
 	}
 }
 
@@ -699,7 +742,7 @@ void Player::pressDown(SDL_Audio &Audio, int gameFrame) {
 		this->moveStartTime = gameFrame;
 		this->moveState = GROUND_POUND;
 		this->animState = ANIM_GROUND_POUND;
-	} else if (isTouchingGround && this->moveState == NORMAL) {
+	} else if (isTouchingGround && (this->moveState == NORMAL || this->moveState == SHOULDER_BASH)) {
 		this->moveStartTime = gameFrame;
 		this->moveState = CROUCH;
 		this->hitboxHeight = 45;
@@ -713,6 +756,8 @@ void Player::pressDown(SDL_Audio &Audio, int gameFrame) {
 			this->animState = ANIM_CROUCH_WALK;
 	} else if (this->moveState == CLIMB) {
 		climbLadder(DOWN);
+	} else if (this->moveState == SWIM) {
+		changeSwimDirection(DOWN);
 	}
 	
 	if (isTouchingGround) {
@@ -754,17 +799,20 @@ void Player::releaseDown(void) {
 		this->moveState = NORMAL;
 		//anim state for normal is constantly updated so i don't need to set the anim state in this case
 	} else if (this->moveState == CLIMB) {
-		climbLadder(NONE);
-	}
+		climbLadder(NONE); // i did this so i could set the anim state???????? wtfff there's a way better way to do this! probably..... XD (setting the move dir and handling the anim state seperatly depending on the direction!!)
+	} else if (this->moveState == SWIM)
+		stopSwimDir(DOWN);
 }
 
 void Player::pressUp(SDL_Audio &Audio, int gameFrame) {
 	enterDoor();
 	enterLadder();// couldn't think of a better name for this :P
+	changeSwimDirection(UP);
 }
 
 void Player::releaseUp(void) {
 	climbLadder(NONE);
+	stopSwimDir(UP);
 } 
 
 inline void Player::userCrouch(SDL_Audio &Audio, int gameFrame) {
@@ -779,7 +827,7 @@ void Player::climbLadder(int dir) {
 	for (size_t i = 0; i < Tile_array.length(); i++) {
 		if (tools::checkHorizBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
 			if (Tile_array.data()[i]->ladder) {
-				this->climbDir = dir;
+				this->moveDir = dir;
 				this->moveState = CLIMB;
 				if (dir != NONE)
 					this->animState = ANIM_CLIMB_MOVE;
@@ -791,7 +839,11 @@ void Player::climbLadder(int dir) {
 	}
 }
 
-void Player::enterLadder(void) {
+void Player::enterLadder(void) { // is only run once to check if the player should enter state when user presses button
+	if (this->moveState != NORMAL && this->moveState != CLIMB)
+		return;
+	else if (this->moveState == CLIMB)
+		climbLadder(UP);
 	for (size_t i = 0; i < Tile_array.length(); i++) {
 		if (tools::checkHorizBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
 			if (Tile_array.data()[i]->ladder) {
@@ -804,4 +856,202 @@ void Player::enterLadder(void) {
 			}
 		}
 	}
+}
+
+void Player::enterWater(SDL_Audio &Audio, int gameFrame) {
+	for (size_t i = 0; i < Tile_array.length(); i++) {
+		if (tools::checkHorizBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
+			if (Tile_array.data()[i]->water) {
+				if (this->moveState == SWIM) {
+					
+					return;
+				} else {
+					this->jumpingOutOfWater = false;
+					this->moveState = SWIM;
+					this->hitboxHeight = 45;
+					this->vertSpriteOffset = 55;
+					this->y += 50;
+					this->horizVect = 0;
+					this->moveDir = this->playerPressedMoveDir;
+					//this->animState = ANIM_CLIMB_STILL; havent made new anim yet...
+					this->soundTimer = 0;
+					Audio.playSFX(SFX_LAND_IN_WATER, 0);
+					// also play sfx enter water
+					return;
+				}
+			}
+		}
+	}
+	
+	if (this->moveState == SWIM)
+		exitWater();
+}
+
+void Player::exitWater(void) {
+	changeSwimDirection(NONE);
+	this->moveState = NORMAL;
+	this->hitboxHeight = 95;
+	this->vertSpriteOffset = 5;
+	this->y -= 50;
+}
+
+void Player::swim(SDL_Audio &Audio, int gameFrame) {
+	if (this->moveState != SWIM)
+		return;
+	
+	bool intersectedWater = false;
+	bool floatingUp = false;
+	
+	for (size_t i = 0; i < Tile_array.length(); i++) {
+		if (tools::checkHorizBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight - 25, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
+			if (Tile_array.data()[i]->water) {
+				if (this->moveState == SWIM) {
+					
+					intersectedWater = true;
+					break;
+				}
+			}
+		}
+	}
+	
+	
+	if (this->vertVect != 0) {
+		if (this->vertVect > 0 && this->moveDir != UP) {
+			this->vertVect += -0.5;
+		} else if (this->vertVect < 0 && this->moveDir != DOWN) {
+			this->vertVect += 0.5;
+		}
+	}
+	
+	for (size_t i = 0; i < Tile_array.length(); i++) {
+		if (tools::checkHorizBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
+			if (Tile_array.data()[i]->water && !jumpingOutOfWater) {
+				switch (this->moveDir) {
+					case UP:
+						if (intersectedWater) {
+							if (this->vertVect < this->maxVertSwimSpeed)
+								this->vertVect += this->waterAcceleration;
+							else
+								this->vertVect = maxVertSwimSpeed;
+						} else {
+							this->vertVect = 0;
+						}
+					break;
+					case DOWN:
+						if (this->vertVect > -this->maxVertSwimSpeed)
+							this->vertVect += -this->waterAcceleration;
+						else
+							this->vertVect = -maxVertSwimSpeed;
+					break;
+					case LEFT:
+						if (this->horizVect > -this->maxHorizSwimSpeed)
+							this->horizVect += -this->waterAcceleration;
+						else
+							this->horizVect = -maxHorizSwimSpeed;
+					break;
+					case RIGHT:
+						if (this->horizVect < this->maxHorizSwimSpeed)
+							this->horizVect += this->waterAcceleration;
+						else
+							this->horizVect = maxHorizSwimSpeed;
+					break;
+					case NONE:
+						if (!intersectedWater && this->vertVect > 0)
+							this->vertVect = 0;
+						else if (intersectedWater && this->vertVect == 0) {
+							this->vertVect = 0.5;
+							floatingUp = true;
+						}
+					break;
+				}
+				break;
+			}
+		}
+	}
+	
+	if (this->moveDir != NONE && floatingUp) {
+		this->vertVect = 0;
+		floatingUp = false;
+	}
+	
+	if (this->horizVect != 0) {
+		if (this->horizVect > 0 && this->moveDir != RIGHT) {
+			this->horizVect += -0.5;
+		} else if (this->horizVect < 0 && this->moveDir != LEFT) {
+			this->horizVect += 0.5;
+		}
+	}
+	
+	if (this->vertVect != 0) {
+		if (this->vertVect < 0.5 && this->vertVect > -0.5) {
+			this->vertVect = 0;
+		}
+	}
+	if (this->horizVect != 0) {
+		if (this->horizVect < 0.5 && this->horizVect > -0.5) {
+			this->vertVect = 0;
+		}
+	}
+	
+	if (this->horizVect != 0) {
+		this->animState = ANIM_SWIM_DEEP_MOVE;
+		if (this->soundTimer >= 30) {
+			Audio.playSFX(SFX_SLOW_SWIM, 0);
+			this->soundTimer = 0;
+		}
+		++this->soundTimer;
+		
+	} else {
+		this->animState = ANIM_SWIM_DEEP_STILL;
+	}
+	
+	if (this->vertVect > 0) {
+		this->playerGroundState = JUMPING;
+	} else if (this->vertVect < 0) {
+		this->playerGroundState = FALLING;
+	} else {
+		this->playerGroundState = STANDING;
+	}
+}
+
+void Player::changeSwimDirection(int dir) {
+	if (this->moveState != SWIM)
+		return;
+	
+	this->moveDir = dir;
+}
+
+void Player::stopSwimDir(int dir) {
+	if (this->moveState != SWIM)
+		return;
+	
+	if (this->moveDir == dir) {
+		this->moveDir = NONE;
+	}
+}
+
+void Player::jumpOutOfWater(void) {
+	if (this->moveState != SWIM)
+		return;
+	const int jumpOutOfWaterForce = 8;
+	
+	for (size_t i = 0; i < Tile_array.length(); i++) {
+		if (tools::checkHorizBounds(this->x, this->y - 28, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
+			if (Tile_array.data()[i]->water) {
+				return;
+			}
+		}
+	}
+	
+	for (size_t i = 0; i < Tile_array.length(); i++) {
+		if (tools::checkVertBounds(this->x, this->y - 50, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
+			if (Tile_array.data()[i]->colidable) {
+				return;
+			}
+		}
+	}
+	
+	
+	this->jumpingOutOfWater = true;
+	this->vertVect = jumpOutOfWaterForce;
 }

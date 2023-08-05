@@ -54,6 +54,7 @@ SDL_Screen::SDL_Screen() {
 	loadTexture((char*)"romfs/texture/grass/level_ground_grass_ladder.png");
 	loadTexture((char*)"romfs/texture/grass/level_water_inside.png");
 	loadTexture((char*)"romfs/texture/grass/level_water_top1.png");
+	loadTexture((char*)"romfs/misc/warp_blk.png");
 }
 
 SDL_Screen::~SDL_Screen() {
@@ -108,4 +109,32 @@ void SDL_Screen::setWindowIcon(char* filePath) {
 	SDL_Surface* loadedSurface = IMG_Load(filePath);
 	SDL_SetWindowIcon(window, loadedSurface);
 	SDL_FreeSurface(loadedSurface);
+}
+
+void SDL_Screen::drawRectangle(int x, int y, int width, int height, int color) {
+	SDL_Rect rect = {x, y, width, height};
+	switch (color) {
+		case CLR_BLU:
+			SDL_SetRenderDrawColor(rend, 0x00, 0x00, 0xff, SDL_ALPHA_OPAQUE);
+		break;
+		case CLR_WHT:
+			SDL_SetRenderDrawColor(rend, 0xff, 0xff, 0xff, SDL_ALPHA_OPAQUE);
+		break;
+		case CLR_RED:
+			SDL_SetRenderDrawColor(rend, 0xff, 0x00, 0x00, SDL_ALPHA_OPAQUE);
+		break;
+		case CLR_GRN:
+			SDL_SetRenderDrawColor(rend, 0x00, 0xff, 0x00, SDL_ALPHA_OPAQUE);
+		break;
+		case CLR_BLK:
+			SDL_SetRenderDrawColor(rend, 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
+		break;
+		case CLR_YLW:
+			SDL_SetRenderDrawColor(rend, 0xff, 0xff, 0x00, SDL_ALPHA_OPAQUE);
+		break;
+		case CLR_GRY:
+			SDL_SetRenderDrawColor(rend, 0x80, 0x80, 0x80, SDL_ALPHA_OPAQUE);
+		break;
+	}
+	SDL_RenderFillRect(rend, &rect);
 }

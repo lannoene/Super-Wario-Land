@@ -26,7 +26,7 @@ void tools::decodeLevelFileIntoMemory(std::string levelPath) {
 	while ((pos = rawLevelFile.find(arrayDelimiter)) != std::string::npos) {
 		std::string token;
 		LevelArray.array_push(new std::string);
-		*LevelArray.data()[LevelArray.length() - 1] = rawLevelFile.substr(0, pos);
+		*LevelArray.data()[LevelArray.shortLen()] = rawLevelFile.substr(0, pos);
 		rawLevelFile.erase(0, pos + arrayDelimiter.length());
 		
 		
@@ -39,7 +39,7 @@ void tools::decodeLevelFileIntoMemory(std::string levelPath) {
 		while ((pos = LevelArray.data()[i]->find(elementDelimiter)) != std::string::npos) {
 			std::string token;
 			LevelEntries.array_push(new std::string);
-			*LevelEntries.data()[LevelEntries.length() - 1] = LevelArray.data()[i]->substr(0, pos);
+			*LevelEntries.data()[LevelEntries.shortLen()] = LevelArray.data()[i]->substr(0, pos);
 			LevelArray.data()[i]->erase(0, pos + elementDelimiter.length());
 		}
 		
@@ -55,13 +55,14 @@ void tools::decodeLevelFileIntoMemory(std::string levelPath) {
 	
 		switch (std::stoi(*LevelEntries.data()[j*entriesNum + 2])) {
 			default:
-				Tile_array.data()[Tile_array.length() - 1]->param1.dummyVar = 0;
-				Tile_array.data()[Tile_array.length() - 1]->param2.dummyVar = 0;
-				Tile_array.data()[Tile_array.length() - 1]->param3.dummyVar = 0;
+				Tile_array.data()[Tile_array.shortLen()]->param1.dummyVar = 0;
+				Tile_array.data()[Tile_array.shortLen()]->param2.dummyVar = 0;
+				Tile_array.data()[Tile_array.shortLen()]->param3.dummyVar = 0;
 			break;
 			case TILE_DOOR:
-				Tile_array.data()[Tile_array.length() - 1]->param1.doorId = std::stoi(*LevelEntries.data()[j*entriesNum + 3]);
-				Tile_array.data()[Tile_array.length() - 1]->param2.destinationDoorId = std::stoi(*LevelEntries.data()[j*entriesNum + 4]);
+			case TILE_WARP_BLOCK:
+				Tile_array.data()[Tile_array.shortLen()]->param1.warpId = std::stoi(*LevelEntries.data()[j*entriesNum + 3]);
+				Tile_array.data()[Tile_array.shortLen()]->param2.destinationWarpId = std::stoi(*LevelEntries.data()[j*entriesNum + 4]);
 			break;
 		}
 	}
@@ -71,7 +72,7 @@ void tools::resetLevel(void) {
 	for (size_t i = 0; i < Tile_array.length(); i++) {
 		delete Tile_array.data()[i];
 	}
-	Tile_array.array_splice(0, Tile_array.length());
+	Tile_array.array_splice(0, Tile_array.shortLen());
 }
 
 bool tools::checkVertBounds(float inputChecking_x, float inputChecking_y, float input_width, float input_height, float inputCheckAgainst_x, float inputCheckAgainst_y, float destination_size_x, float destination_size_y) {

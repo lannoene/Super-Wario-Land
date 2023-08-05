@@ -78,15 +78,15 @@ bool drawEditor(SDL_Screen &Scene) {
 					mousePushed = true;
 					mouseButton = LEFT;
 					Tile_array.array_push(new Tile((floor((coord_click_x - cameraHorizOffsetPx)/50)*50), floor((coord_click_y - cameraVertOffsetPx)/50)*50, currentTile));
-					Tile_array.data()[Tile_array.length() - 1]->param1.dummyVar = -9999;
-					Tile_array.data()[Tile_array.length() - 1]->param2.dummyVar = -9999;
-					Tile_array.data()[Tile_array.length() - 1]->param3.dummyVar = -9999;
+					Tile_array.data()[Tile_array.shortLen()]->param1.dummyVar = -9999;
+					Tile_array.data()[Tile_array.shortLen()]->param2.dummyVar = -9999;
+					Tile_array.data()[Tile_array.shortLen()]->param3.dummyVar = -9999;
 					
 					switch (currentTile) {
 						case TILE_DOOR: {
 							mousePushed = false;
-							std::string tempDoorIdText = createPopup(Scene, (char*)"Enter door id");
-							std::string tempDestDoorIdText = createPopup(Scene, (char*)"Enter destination door id");
+							std::string tempDoorIdText = createPopup(Scene, (char*)"Enter door's warp id");
+							std::string tempDestDoorIdText = createPopup(Scene, (char*)"Enter destination warp id");
 							
 							int stoiDoorId = 0;
 							int stoiDestDoorId = 0;
@@ -94,8 +94,8 @@ bool drawEditor(SDL_Screen &Scene) {
 								stoiDoorId = std::stoi(tempDoorIdText);
 							} catch (std::invalid_argument const&) {
 								std::cout << "Invalid number" << std::endl;
-								delete Tile_array.data()[Tile_array.length() - 1];
-								Tile_array.array_splice(Tile_array.length() - 1, 1);
+								delete Tile_array.data()[Tile_array.shortLen()];
+								Tile_array.array_splice(Tile_array.shortLen(), 1);
 								break;
 							}
 							
@@ -103,12 +103,28 @@ bool drawEditor(SDL_Screen &Scene) {
 								stoiDestDoorId = std::stoi(tempDestDoorIdText);
 							} catch (std::invalid_argument const&) {
 								std::cout << "Invalid number" << std::endl;
-								delete Tile_array.data()[Tile_array.length() - 1];
-								Tile_array.array_splice(Tile_array.length() - 1, 1);
+								delete Tile_array.data()[Tile_array.shortLen()];
+								Tile_array.array_splice(Tile_array.shortLen(), 1);
 								break;
 							}
-							Tile_array.data()[Tile_array.length() - 1]->param1.doorId = stoiDoorId;
-							Tile_array.data()[Tile_array.length() - 1]->param2.destinationDoorId = stoiDestDoorId;
+							Tile_array.data()[Tile_array.shortLen()]->param1.warpId = stoiDoorId;
+							Tile_array.data()[Tile_array.shortLen()]->param2.destinationWarpId = stoiDestDoorId;
+						}
+						break;
+						case TILE_WARP_BLOCK: {
+							mousePushed = false;
+							
+							int stoiWarpId = 0;
+							try {
+								stoiWarpId = std::stoi(createPopup(Scene, (char*)"Enter warp id"));
+							} catch (std::invalid_argument const&) {
+								std::cout << "Invalid number" << std::endl;
+								delete Tile_array.data()[Tile_array.shortLen()];
+								Tile_array.array_splice(Tile_array.shortLen(), 1);
+								break;
+							}
+							
+							Tile_array.data()[Tile_array.shortLen()]->param1.warpId = stoiWarpId;
 						}
 						break;
 					}
@@ -117,7 +133,7 @@ bool drawEditor(SDL_Screen &Scene) {
 				if (SDL_BUTTON_RIGHT == event.button.button) {
 					mousePushed = true;
 					mouseButton = RIGHT;
-					for (int i = Tile_array.length() - 1; i >= 0; i--) {
+					for (int i = Tile_array.shortLen(); i >= 0; i--) {
 						if (Tile_array.data()[i]->x == floor(-cameraHorizOffsetPx + (coord_click_x/50)*50) && Tile_array.data()[i]->y == floor((coord_click_y - cameraVertOffsetPx)/50)*50) {
 							delete Tile_array.data()[i];
 							Tile_array.array_splice(i, 1);
@@ -143,25 +159,25 @@ bool drawEditor(SDL_Screen &Scene) {
 					
 					bool tileThere = false;
 				
-					for (int i = Tile_array.length() - 1; i >= 0; i--) {
-						if (Tile_array.data()[i]->x == floor(-cameraHorizOffsetPx + (coord_click_x/50)*50) && Tile_array.data()[i]->y == floor((coord_click_y - cameraVertOffsetPx)/50)*50) {
+					for (int i = Tile_array.shortLen(); i >= 0; i--) {
+						if (Tile_array.data()[i]->x == floor(-cameraHorizOffsetPx + (coord_click_x/50)*50) && Tile_array.data()[i]->y == floor((coord_click_y - cameraVertOffsetPx)/50)*50 && Tile_array.data()[i]->getType() == currentTile) {
 							tileThere = true;
 							break;
 						}
 					}
 					
-					if (!tileThere) {
+					if (!tileThere && coord_click_x < 800 && coord_click_y < 600 && coord_click_x >= 0 && coord_click_y >= 0) {
 						Tile_array.array_push(new Tile((floor((coord_click_x - cameraHorizOffsetPx)/50)*50), floor((coord_click_y - cameraVertOffsetPx)/50)*50, currentTile));
-						Tile_array.data()[Tile_array.length() - 1]->param1.dummyVar = -9999;
-						Tile_array.data()[Tile_array.length() - 1]->param2.dummyVar = -9999;
-						Tile_array.data()[Tile_array.length() - 1]->param3.dummyVar = -9999;
+						Tile_array.data()[Tile_array.shortLen()]->param1.dummyVar = -9999;
+						Tile_array.data()[Tile_array.shortLen()]->param2.dummyVar = -9999;
+						Tile_array.data()[Tile_array.shortLen()]->param3.dummyVar = -9999;
 					}
 				} else if (mousePushed && mouseButton == RIGHT) {
 					coord_click_x += event.motion.xrel;
 					coord_click_y += event.motion.yrel;
 					
-					for (int i = Tile_array.length() - 1; i >= 0; i--) {
-						if (Tile_array.data()[i]->x == floor(-cameraHorizOffsetPx + (coord_click_x/50))*50 && Tile_array.data()[i]->y == floor((coord_click_y - cameraVertOffsetPx)/50)*50) {
+					for (int i = Tile_array.shortLen(); i >= 0; i--) {
+						if (Tile_array.data()[i]->x == floor(-cameraHorizOffsetPx + (coord_click_x/50)*50) && Tile_array.data()[i]->y == floor((coord_click_y - cameraVertOffsetPx)/50)*50) {
 							delete Tile_array.data()[i];
 							Tile_array.array_splice(i, 1);
 							break;
@@ -288,6 +304,9 @@ bool drawEditor(SDL_Screen &Scene) {
 		case TILE_WATER_TOP:
 			Scene.drawImage(IMAGE_TILE_WATER_TOP, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
 		break;
+		case TILE_WARP_BLOCK:
+			Scene.drawImage(IMAGE_TILE_WARP_BLOCK, floor((coord_click_x)/50)*50, floor((coord_click_y)/50)*50, 50, 50);
+		break;
 	}
 	
 	char buffer[50];
@@ -394,6 +413,9 @@ bool drawEditor(SDL_Screen &Scene) {
 		break;
 		case TILE_WATER_TOP:
 			snprintf(buffer, 50, "Current tile: Water_Top (not colidable)");
+		break;
+		case TILE_WARP_BLOCK:
+			snprintf(buffer, 50, "Current tile: Warp_Block");
 		break;
 	}
 	Scene.drawText(buffer, 0, 60, 30);

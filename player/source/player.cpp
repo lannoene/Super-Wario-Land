@@ -420,7 +420,7 @@ void Player::calcVertPhysics(SDL_Audio &Audio, int gameFrame) {
 			if (Tile_array.data()[i]->colidable == true) {
 				if (isTouchingGround == false && this->playerGroundState == FALLING) {
 					if (!Tile_array.data()[i]->semisolid || (Tile_array.data()[i]->semisolid && this->y + (float)this->hitboxHeight <= Tile_array.data()[i]->y)) {
-						if (vertVect <= -playerMaxVertSpeed*0.6 && horizVect == 0) {
+						if (vertVect <= -playerMaxVertSpeed*0.6 && horizVect == 0 && this->moveState == NORMAL) {
 							Audio.playSFX(SFX_LAND, 0);
 						}
 						this->vertVect = 0;
@@ -719,11 +719,10 @@ inline void Player::enterDoor(void) {
 	}
 	if (ret != -1 && Tile_array.data()[ret]->getType() == TILE_DOOR && this->isTouchingGround == true) {
 		for (size_t i = 0; i < Tile_array.length(); i++) {
-			if (Tile_array.data()[i]->param1.doorId == Tile_array.data()[ret]->param2.destinationDoorId && this->moveState != SHOULDER_BASH) {
+			if (Tile_array.data()[i]->param1.warpId == Tile_array.data()[ret]->param2.destinationWarpId && this->moveState != SHOULDER_BASH) {
 				this->setXYPos(Tile_array.data()[i]->x + (Tile_array.data()[i]->width - this->hitboxWidth)/2, Tile_array.data()[i]->y + -this->hitboxHeight + 100);
 				this->vertVect = 0;
 				this->horizVect = 0;
-				//this->playerPressedMoveDir = NONE;
 			}
 		}
 	}
@@ -776,6 +775,9 @@ void Player::releaseDown(void) {
 					break;
 				}
 			}
+		}
+	
+		for (size_t i = 0; i < Tile_array.length(); i++) {
 			if (tools::checkVertBounds(this->x, this->y + this->hitboxHeight, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height) && !this->isTouchingGround) { // crappy solution to the floor glitch but idrk
 				if ((Tile_array.data()[i]->colidable && !Tile_array.data()[i]->semisolid) || (Tile_array.data()[i]->colidable && Tile_array.data()[i]->semisolid && this->y + (float)this->hitboxHeight <= Tile_array.data()[i]->y)) {
 					this->y = Tile_array.data()[i]->y - this->hitboxHeight;
@@ -868,16 +870,18 @@ void Player::enterWater(SDL_Audio &Audio, int gameFrame) {
 				} else {
 					this->playerMaxHorizSpeed = 6; // default
 					this->jumpingOutOfWater = false;
+					if (this->moveState != CROUCH)
+						this->y += 50;
+					else {
+						releaseDown();
+					}
 					this->moveState = SWIM;
 					this->hitboxHeight = 45;
 					this->vertSpriteOffset = 55;
-					this->y += 50;
-					this->horizVect = 0;
 					this->moveDir = this->playerPressedMoveDir;
-					//this->animState = ANIM_CLIMB_STILL; havent made new anim yet...
+					this->animState = ANIM_SWIM_DEEP_STILL;
 					this->soundTimer = 0;
 					Audio.playSFX(SFX_LAND_IN_WATER, 0);
-					// also play sfx enter water
 					return;
 				}
 			}
@@ -916,14 +920,6 @@ void Player::swim(SDL_Audio &Audio, int gameFrame) {
 	}
 	
 	
-	if (this->vertVect != 0) {
-		if (this->vertVect > 0 && this->moveDir != UP) {
-			this->vertVect += -0.5;
-		} else if (this->vertVect < 0 && this->moveDir != DOWN) {
-			this->vertVect += 0.5;
-		}
-	}
-	
 	for (size_t i = 0; i < Tile_array.length(); i++) {
 		if (tools::checkHorizBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
 			if (Tile_array.data()[i]->water && !jumpingOutOfWater) {
@@ -959,8 +955,11 @@ void Player::swim(SDL_Audio &Audio, int gameFrame) {
 					case NONE:
 						if (!intersectedWater && this->vertVect > 0)
 							this->vertVect = 0;
-						else if (intersectedWater && this->vertVect == 0) {
-							this->vertVect = 0.5;
+						else if (intersectedWater && this->vertVect >= 0 && this->vertVect <= 0.5) { // buoyancy
+							if (this->vertVect < 0.5)
+								this->vertVect += this->waterAcceleration;
+							else
+								this->vertVect = 0.5;
 							floatingUp = true;
 						}
 					break;
@@ -975,21 +974,26 @@ void Player::swim(SDL_Audio &Audio, int gameFrame) {
 		floatingUp = false;
 	}
 	
+	if (this->vertVect != 0) {
+		if (this->vertVect > 0 && this->moveDir != UP && !floatingUp) {
+			this->vertVect += -waterDeceleration;
+		} else if (this->vertVect < 0 && this->moveDir != DOWN) {
+			this->vertVect += waterDeceleration;
+		}
+	}
+	
 	if (this->horizVect != 0) {
+		if (this->horizVect < waterDeceleration && this->horizVect > -waterDeceleration)
+			this->horizVect = 0;
 		if (this->horizVect > 0 && this->moveDir != RIGHT) {
-			this->horizVect += -0.5;
+			this->horizVect += -waterDeceleration;
 		} else if (this->horizVect < 0 && this->moveDir != LEFT) {
-			this->horizVect += 0.5;
+			this->horizVect += waterDeceleration;
 		}
 	}
 	
 	if (this->vertVect != 0) {
-		if (this->vertVect < 0.5 && this->vertVect > -0.5) {
-			this->vertVect = 0;
-		}
-	}
-	if (this->horizVect != 0) {
-		if (this->horizVect < 0.5 && this->horizVect > -0.5) {
+		if (this->vertVect < waterDeceleration && this->vertVect > -waterDeceleration) {
 			this->vertVect = 0;
 		}
 	}
@@ -1032,7 +1036,7 @@ void Player::stopSwimDir(int dir) {
 }
 
 void Player::jumpOutOfWater(void) {
-	if (this->moveState != SWIM)
+	if (this->moveState != SWIM || this->vertVect < 0)
 		return;
 	const int jumpOutOfWaterForce = 8;
 	
@@ -1046,7 +1050,7 @@ void Player::jumpOutOfWater(void) {
 	
 	for (size_t i = 0; i < Tile_array.length(); i++) {
 		if (tools::checkVertBounds(this->x, this->y - 50, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (Tile_array.data()[i]->colidable) {
+			if (Tile_array.data()[i]->colidable && !Tile_array.data()[i]->semisolid) {
 				return;
 			}
 		}

@@ -90,10 +90,10 @@ void pauseScreen(SDL_Screen &Scene, SDL_Audio &Audio) {
 		Scene.drawRectangle(0, 60, floatMusVol, 30, CLR_GRY);
 		
 		char buffer[50];
-		snprintf(buffer, 50, "SFX: %d", Mix_Volume(-1, -1));
+		snprintf(buffer, 50, "SFX: %f", ((float)Mix_Volume(-1, -1)/128)*100);
 		Scene.drawText(buffer, 0, 30, 30);
 		
-		snprintf(buffer, 50, "Music: %d", Mix_VolumeMusic(-1));
+		snprintf(buffer, 50, "Music: %f", ((float)Mix_VolumeMusic(-1)/128)*100);
 		Scene.drawText(buffer, 0, 60, 30);
 		Scene.finishDrawing();
 	}

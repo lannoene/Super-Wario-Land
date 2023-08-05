@@ -4,7 +4,7 @@
 PACKAGES := sdl2 SDL2_image SDL2_mixer SDL2_ttf
 CXXFLAGS := -std=c++20 -ggdb -gdwarf -Og -Wall -D_DEBUG
 CXXFLAGS += `pkg-config --cflags $(PACKAGES)`
-LDFLAGS := -mconsole -ggdb -gdwarf
+LDFLAGS := -ggdb -gdwarf
 LDFLAGS += `pkg-config --libs $(PACKAGES)`
 # add header files here
 HDRS :=

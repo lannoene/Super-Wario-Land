@@ -15,12 +15,12 @@ public:
 	int height;
 	
 	union uparam1 {
-		int doorId;
+		int warpId;
 		int scrollstopId;
 		int dummyVar;
 	} param1;
 	union uparam2 {
-		int destinationDoorId;
+		int destinationWarpId;
 		int dummyVar;
 	} param2;
 	union uparam3 {
@@ -60,6 +60,7 @@ private:
 };
 
 enum tileType {
+	TILE_WARP_BLOCK = -2,
 	TILE_SPAWN_POINT = -1,
 	TILE_GRASS_TOP = 0,
 	TILE_GRASS_TOP_RIGHT,

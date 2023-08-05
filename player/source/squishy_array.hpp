@@ -34,10 +34,13 @@ public:
 		if (index > array_length || index + elements > array_length) {
 			return;
 		}
-		for (size_t i = index; i < array_length; i++) {
+		for (size_t i = index; i < array_length - 1; i++) {
 			array_ptr[i] = array_ptr[i + elements];
 		}
 		change_array_size(-elements);
+	}
+	size_t shortLen() {
+		return array_length - 1;
 	}
 private:
 	type* array_ptr;

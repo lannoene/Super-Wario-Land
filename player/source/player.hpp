@@ -42,7 +42,8 @@ private:
 	float playerJumpForce = 8;
 	float maxHorizSwimSpeed = 3;
 	float maxVertSwimSpeed = 3;
-	float waterAcceleration = 0.5;
+	float waterAcceleration = 0.3;
+	float waterDeceleration = 0.3;
 	int coins = 0;
 	int soundTimer = 0;
 	int vertCameraOffsetOffset = 250; //it's the offset of the offset!!!
@@ -94,8 +95,6 @@ enum MOVE_STATES {
 	NORMAL, // or standing/jumping/walking idk
 	SHOULDER_BASH,
 	GROUND_POUND,
-	ROLL,
-	BUMP,
 	CROUCH,
 	CLIMB,
 	SWIM

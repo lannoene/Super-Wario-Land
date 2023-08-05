@@ -63,8 +63,8 @@ void tools::decodeLevelFileIntoMemory(std::string levelPath) {
 				Tile_array.data()[Tile_array.length() - 1]->param3.dummyVar = 0;
 			break;
 			case TILE_DOOR:
-				Tile_array.data()[Tile_array.length() - 1]->param1.doorId = std::stoi(*LevelEntries.data()[j*entriesNum + 3]);
-				Tile_array.data()[Tile_array.length() - 1]->param2.destinationDoorId = std::stoi(*LevelEntries.data()[j*entriesNum + 4]);
+				Tile_array.data()[Tile_array.length() - 1]->param1.warpId = std::stoi(*LevelEntries.data()[j*entriesNum + 3]);
+				Tile_array.data()[Tile_array.length() - 1]->param2.destinationWarpId = std::stoi(*LevelEntries.data()[j*entriesNum + 4]);
 			break;
 		}
 	}
@@ -74,5 +74,5 @@ void tools::resetLevel(void) {
 	for (int i = 0; i < Tile_array.length(); i++) {
 		delete Tile_array.data()[i];
 	}
-	Tile_array.array_splice(0, Tile_array.length());
+	Tile_array.array_splice(0, Tile_array.shortLen());
 }

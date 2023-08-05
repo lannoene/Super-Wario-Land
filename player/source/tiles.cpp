@@ -27,6 +27,7 @@ Tile::Tile(int input_x, int input_y, int type) {
 			this->visible = true;
 		break;
 		case TILE_SPAWN_POINT:
+		case TILE_WARP_BLOCK:
 			this->colidable = false;
 			this->visible = false;
 		break;

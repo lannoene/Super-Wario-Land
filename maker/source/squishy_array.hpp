@@ -37,6 +37,9 @@ public:
 		}
 		change_array_size(-elements);
 	}
+	size_t shortLen() {
+		return array_length - 1;
+	}
 private:
 	type* array_ptr;
 	int array_length;

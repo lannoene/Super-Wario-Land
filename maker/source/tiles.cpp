@@ -66,8 +66,13 @@ void Tile::draw(SDL_Screen &Scene) {
 		case GOLD_COIN:
 			Scene.drawImage(GOLD_COIN_ROTATION_1, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
 		break;
-		case TILE_DOOR:
+		case TILE_DOOR: {
 			Scene.drawImage(IMAGE_DOOR_TOP, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+			Scene.drawRectangle(x + cameraHorizOffsetPx, y + cameraVertOffsetPx, 25, 20, CLR_WHT);
+			char doorWarpId[5];
+			snprintf(doorWarpId, 5, "%d", this->param1.warpId);
+			Scene.drawText(doorWarpId, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, 20);
+		}
 		break;
 		case TILE_DOOR_BOTTOM:
 			Scene.drawImage(IMAGE_DOOR_BOTTOM, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
@@ -119,6 +124,14 @@ void Tile::draw(SDL_Screen &Scene) {
 		break;
 		case TILE_WATER_TOP:
 			Scene.drawImage(IMAGE_TILE_WATER_TOP, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_WARP_BLOCK: {
+			Scene.drawImage(IMAGE_TILE_WARP_BLOCK, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+			Scene.drawRectangle(x + cameraHorizOffsetPx, y + cameraVertOffsetPx, 25, 20, CLR_WHT);
+			char doorWarpId[5];
+			snprintf(doorWarpId, 5, "%d", this->param1.warpId);
+			Scene.drawText(doorWarpId, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, 20);
+		}
 		break;
 	}
 }

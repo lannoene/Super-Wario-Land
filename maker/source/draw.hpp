@@ -17,6 +17,7 @@ public:
 	void drawImage(int imageId, int x, int y, int width, int height);
 	void flipImage(int imageId);
 	void setTitle(char* title);
+	void drawRectangle(int x, int y, int width, int height, int color);
 private:
 	//window rend vars
 	SDL_Window *window = NULL;
@@ -70,4 +71,15 @@ enum imageNums {
 	IMAGE_TILE_GRASS_DIRT_LADDER,
 	IMAGE_TILE_WATER_MIDDLE,
 	IMAGE_TILE_WATER_TOP,
+	IMAGE_TILE_WARP_BLOCK,
+};
+
+enum RECT_COLORS {
+	CLR_BLU = 0,
+	CLR_WHT,
+	CLR_RED,
+	CLR_GRN,
+	CLR_BLK,
+	CLR_YLW,
+	CLR_GRY
 };

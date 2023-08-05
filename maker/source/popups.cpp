@@ -32,6 +32,6 @@ std::string createPopup(SDL_Screen &Scene, char* popupText) {
 		}
 		Scene.finishDrawing();
 	}
-	return "e";
+	return "";
 }
 

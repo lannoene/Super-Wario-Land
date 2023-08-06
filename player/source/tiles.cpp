@@ -16,7 +16,8 @@ Tile::Tile(int input_x, int input_y, int type) {
 	this->ladder = false;
 	this->visible = true;
 	this->colidable = true;
-	this->water = false;
+	this->flags.water = false;
+	this->flags.warp = false;
 	this->tileId = tileCount;
 	++tileCount;
 	this->animDelay = 9999999;
@@ -27,12 +28,15 @@ Tile::Tile(int input_x, int input_y, int type) {
 			this->visible = true;
 		break;
 		case TILE_SPAWN_POINT:
-		case TILE_WARP_BLOCK:
 			this->colidable = false;
 			this->visible = false;
 		break;
+		case TILE_WARP_BLOCK:
+			this->colidable = false;
+			this->visible = false;
+			this->flags.warp = true;
+		break;
 		case GOLD_COIN:
-		case TILE_DOOR:
 		case TILE_DOOR_BOTTOM:
 		case TILE_DIRT_BG:
 		case TILE_DIRT_BG_SHADOW:
@@ -51,8 +55,13 @@ Tile::Tile(int input_x, int input_y, int type) {
 			this->ladder = true;
 		break;
 		case TILE_WATER_MIDDLE:
-			this->water = true;
+			this->flags.water = true;
 			this->colidable = false; // turn off default colisions
+		break;
+		case TILE_DOOR:
+			this->flags.warp = true;
+			this->colidable = false;
+			this->visible = true;
 		break;
 	}
 }

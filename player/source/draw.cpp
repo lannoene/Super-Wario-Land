@@ -4,7 +4,6 @@ SquishyArray <SDL_Texture*>sdl_image(0);
 SDL_Screen::SDL_Screen() {
 	SDL_Init(SDL_INIT_EVERYTHING);
 	window = SDL_CreateWindow("Super Wario Land", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
-	screen = SDL_GetWindowSurface(window);
 	rend = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	
 	TTF_Init();
@@ -117,7 +116,7 @@ void SDL_Screen::drawText(char* inputText, int x, int y, float textSize) {
 
 void SDL_Screen::finishDrawing(void) {
 	SDL_RenderPresent(rend);
-	SDL_GL_SwapWindow(window);
+	SDL_UpdateWindowSurface(window);
 }
 
 void SDL_Screen::loadTexture(char* filePath) {

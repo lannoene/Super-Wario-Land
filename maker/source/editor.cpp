@@ -168,9 +168,9 @@ bool drawEditor(SDL_Screen &Scene) {
 					
 					if (!tileThere && coord_click_x < 800 && coord_click_y < 600 && coord_click_x >= 0 && coord_click_y >= 0) {
 						Tile_array.array_push(new Tile((floor((coord_click_x - cameraHorizOffsetPx)/50)*50), floor((coord_click_y - cameraVertOffsetPx)/50)*50, currentTile));
-						Tile_array.data()[Tile_array.shortLen()]->param1.dummyVar = -9999;
-						Tile_array.data()[Tile_array.shortLen()]->param2.dummyVar = -9999;
-						Tile_array.data()[Tile_array.shortLen()]->param3.dummyVar = -9999;
+						Tile_array.data()[Tile_array.shortLen()]->param1.dummyVar = 0;
+						Tile_array.data()[Tile_array.shortLen()]->param2.dummyVar = 0;
+						Tile_array.data()[Tile_array.shortLen()]->param3.dummyVar = 0;
 					}
 				} else if (mousePushed && mouseButton == RIGHT) {
 					coord_click_x += event.motion.xrel;

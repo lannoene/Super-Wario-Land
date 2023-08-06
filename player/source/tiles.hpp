@@ -31,6 +31,15 @@ public:
 	virtual ~Tile();
 	void draw(SDL_Screen &Scene, int gameFrame);
 	int getType(void);
+	struct s_flags {
+		bool colidable;
+		bool semisolid;
+		bool breakable;
+		bool ladder;
+		bool visible;
+		bool water;
+		bool warp;
+	} flags;
 	bool colidable;
 	bool semisolid;
 	bool breakable;

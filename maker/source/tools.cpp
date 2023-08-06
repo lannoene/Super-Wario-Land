@@ -74,5 +74,5 @@ void tools::resetLevel(void) {
 	for (int i = 0; i < Tile_array.length(); i++) {
 		delete Tile_array.data()[i];
 	}
-	Tile_array.array_splice(0, Tile_array.shortLen());
+	Tile_array.array_splice(0, Tile_array.length());
 }

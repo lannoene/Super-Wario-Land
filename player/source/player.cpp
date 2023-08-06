@@ -719,7 +719,7 @@ inline void Player::enterDoor(void) {
 	}
 	if (ret != -1 && Tile_array.data()[ret]->getType() == TILE_DOOR && this->isTouchingGround == true) {
 		for (size_t i = 0; i < Tile_array.length(); i++) {
-			if (Tile_array.data()[i]->param1.warpId == Tile_array.data()[ret]->param2.destinationWarpId && this->moveState != SHOULDER_BASH) {
+			if (Tile_array.data()[i]->param1.warpId == Tile_array.data()[ret]->param2.destinationWarpId && this->moveState != SHOULDER_BASH && Tile_array.data()[i]->flags.warp) {
 				this->setXYPos(Tile_array.data()[i]->x + (Tile_array.data()[i]->width - this->hitboxWidth)/2, Tile_array.data()[i]->y + -this->hitboxHeight + 100);
 				this->vertVect = 0;
 				this->horizVect = 0;
@@ -863,7 +863,7 @@ void Player::enterLadder(void) { // is only run once to check if the player shou
 void Player::enterWater(SDL_Audio &Audio, int gameFrame) {
 	for (size_t i = 0; i < Tile_array.length(); i++) {
 		if (tools::checkHorizBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (Tile_array.data()[i]->water) {
+			if (Tile_array.data()[i]->flags.water) {
 				if (this->moveState == SWIM) {
 					
 					return;
@@ -909,7 +909,7 @@ void Player::swim(SDL_Audio &Audio, int gameFrame) {
 	
 	for (size_t i = 0; i < Tile_array.length(); i++) {
 		if (tools::checkHorizBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight - 25, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (Tile_array.data()[i]->water) {
+			if (Tile_array.data()[i]->flags.water) {
 				if (this->moveState == SWIM) {
 					
 					intersectedWater = true;
@@ -922,7 +922,7 @@ void Player::swim(SDL_Audio &Audio, int gameFrame) {
 	
 	for (size_t i = 0; i < Tile_array.length(); i++) {
 		if (tools::checkHorizBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (Tile_array.data()[i]->water && !jumpingOutOfWater) {
+			if (Tile_array.data()[i]->flags.water && !jumpingOutOfWater) {
 				switch (this->moveDir) {
 					case UP:
 						if (intersectedWater) {
@@ -1042,7 +1042,7 @@ void Player::jumpOutOfWater(void) {
 	
 	for (size_t i = 0; i < Tile_array.length(); i++) {
 		if (tools::checkHorizBounds(this->x, this->y - 28, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (Tile_array.data()[i]->water) {
+			if (Tile_array.data()[i]->flags.water) {
 				return;
 			}
 		}

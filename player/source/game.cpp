@@ -17,6 +17,7 @@ int cameraVertOffsetPx = 0;
 extern base* bptr;
 extern gameScreen game;
 extern bool showDebugInfo;
+extern int level;
 
 SquishyArray <Tile*>Tile_array(0);
 
@@ -24,7 +25,17 @@ int gameFrame = 0;
 
 bool drawGame(SDL_Screen &Scene, SDL_Audio &Audio) {
 	if (gameFrame == 0) {
-		tools::decodeLevelFileIntoMemory("level.lvl");
+		switch (level) {
+			case 0:
+				tools::decodeLevelFileIntoMemory("level.lvl");
+			break;
+			case 1:
+				tools::decodeLevelFileIntoMemory("level1.lvl");
+			break;
+			case 2:
+				tools::decodeLevelFileIntoMemory("level2.lvl");
+			break;
+		}
 		Audio.playMusic(MUSIC_GRASS, -1);
 	}
 	

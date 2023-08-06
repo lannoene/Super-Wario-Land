@@ -103,3 +103,13 @@ enum tileType {
 	TILE_WATER_MIDDLE,
 	TILE_WATER_TOP,
 };
+
+struct s_level {
+	int x;
+	int y;
+	int type;
+	int param1;
+	int param2;
+	int param3;
+	char numThing[20];
+};

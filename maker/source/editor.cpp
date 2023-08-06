@@ -45,14 +45,20 @@ bool drawEditor(SDL_Screen &Scene) {
 					break;
 					case SDL_SCANCODE_S: {
 						if((event.key.keysym.mod & SDLK_LCTRL)) {
-							std::ofstream MyFile("level.lvl");
-							std::string fileCont;
-							
+							puts("saving level:");
+							FILE *of = fopen("level.lvl", "wb");
+							fwrite("LVL1", 1, 4, of);
+							int times = 0;
 							for (int i = 0; i < Tile_array.length(); i++) {
-								fileCont.append(Tile_array.data()[i]->appendOutputToString());
+								++times;
+								char bruh[20];
+								printf("%d\n", times);
+								struct s_level levelStr = {Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->getType(), Tile_array.data()[i]->param1.dummyVar, Tile_array.data()[i]->param2.dummyVar, Tile_array.data()[i]->param3.dummyVar};
+								snprintf(levelStr.numThing, 20, "%d", times);
+								fwrite(&levelStr, sizeof(struct s_level), 1, of);
+								fflush(of);
 							}
-							MyFile << fileCont;
-							MyFile.close();
+							fclose(of);
 							puts("saved");
 							Scene.setTitle((char*)"Super Wario Land - Editor");
 						}

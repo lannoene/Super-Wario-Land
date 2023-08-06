@@ -135,20 +135,3 @@ void Tile::draw(SDL_Screen &Scene) {
 		break;
 	}
 }
-
-std::string Tile::appendOutputToString(void) {
-	struct s_level {
-		int x;
-		int y;
-		int type;
-		int param1;
-		int param2;
-		int param3;
-	};
-	struct s_level levelStr(this->x, this->y, this->type, this->param1.dummyVar, this->param2.dummyVar, this->param3.dummyVar);
-	FILE *of;
-	of = fopen("levelStr.lvl", "a");
-	fwrite(&levelStr, sizeof(struct s_level), 1, of);
-	fclose(of);
-	return std::to_string(this->x)+","+std::to_string(this->y)+","+std::to_string(this->type)+","+std::to_string(this->param1.dummyVar)+","+std::to_string(this->param2.dummyVar)+",;";
-}

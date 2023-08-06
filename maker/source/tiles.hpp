@@ -31,7 +31,6 @@ public:
 	~Tile();
 	void draw(SDL_Screen &Scene);
 	int getType(void);
-	std::string appendOutputToString(void);
 	void setParam(int paramId, int value);
 private:
 	int type;
@@ -71,4 +70,14 @@ enum tileType {
 	TILE_GRASS_LADDER,
 	TILE_WATER_MIDDLE,
 	TILE_WATER_TOP,
+};
+
+struct s_level {
+	int x;
+	int y;
+	int type;
+	int param1;
+	int param2;
+	int param3;
+	char numThing[20];
 };

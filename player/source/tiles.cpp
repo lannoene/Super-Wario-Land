@@ -21,6 +21,7 @@ Tile::Tile(int input_x, int input_y, int type) {
 	this->tileId = tileCount;
 	++tileCount;
 	this->animDelay = 9999999;
+	this->animTimer = 0;
 	
 	switch (type) {
 		default:

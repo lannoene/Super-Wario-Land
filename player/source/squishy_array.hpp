@@ -8,6 +8,10 @@ public:
 	SquishyArray(int inputArrayLength) {
 		array_ptr = (type*)malloc(inputArrayLength * sizeof(type));
 		array_length = inputArrayLength;
+		if (array_ptr == nullptr) {
+			puts("Your array pointer is null. This is not gud lul XD lamo rofl");
+			exit(255);
+		}
 	}
 	~SquishyArray(void) {
 		free(array_ptr);
@@ -34,7 +38,7 @@ public:
 		if (index > array_length || index + elements > array_length) {
 			return;
 		}
-		for (size_t i = index; i < array_length - 1; i++) {
+		for (size_t i = index; i < array_length - elements; i++) {
 			array_ptr[i] = array_ptr[i + elements];
 		}
 		change_array_size(-elements);

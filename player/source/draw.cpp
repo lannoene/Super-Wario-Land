@@ -84,7 +84,13 @@ SDL_Screen::SDL_Screen() {
 }
 
 SDL_Screen::~SDL_Screen() {
+	for (size_t i = 0; i < sdl_image.length(); i++) {
+		SDL_DestroyTexture(sdl_image.data()[i]);
+	}
+	TTF_CloseFont(font);
 	TTF_Quit();
+	SDL_DestroyWindow(window);
+	SDL_DestroyRenderer(rend);
 	SDL_Quit();
 }
 

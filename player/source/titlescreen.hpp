@@ -3,6 +3,7 @@
 
 #include "draw.hpp"
 #include "audio.hpp"
+#include "map.hpp"
 
 class base {
 public:
@@ -26,5 +27,12 @@ class gameScreen : public base {
 public:
 	bool draw(SDL_Screen &Scene, SDL_Audio &Audio) override {
 		return drawGame(Scene, Audio);
+	}
+};
+
+class mapScreen : public base {
+public:
+	bool draw(SDL_Screen &Scene, SDL_Audio &Audio) override {
+		return runMapScreen(Scene, Audio);
 	}
 };

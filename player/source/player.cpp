@@ -6,7 +6,7 @@
 
 extern float cameraHorizOffsetPx;
 extern int cameraVertOffsetPx;
-extern SquishyArray <Tile*>Tile_array;
+extern SquishyArray <SquishyArray<Tile*>*>Room_array;
 
 Player::Player() {
 	this->x = 0;
@@ -35,16 +35,18 @@ Player::Player() {
 Player::~Player() {
 }
 
+int currentRoom = 0;
+
 void Player::update(SDL_Audio &Audio, int gameFrame) {
-	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (tools::checkHorizBounds(x, y, hitboxWidth, hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (Tile_array.data()[i]->getType() == GOLD_COIN) {
-				switch (Tile_array.data()[i]->getType()) {
+	for (size_t i = 0; i < Room_array.data()[currentRoom]->length(); i++) {
+		if (tools::checkHorizBounds(x, y, hitboxWidth, hitboxHeight, Room_array.data()[currentRoom]->data()[i]->x, Room_array.data()[currentRoom]->data()[i]->y, Room_array.data()[currentRoom]->data()[i]->width, Room_array.data()[currentRoom]->data()[i]->height)) {
+			if (Room_array.data()[currentRoom]->data()[i]->getType() == GOLD_COIN) {
+				switch (Room_array.data()[currentRoom]->data()[i]->getType()) {
 					default:
 					break;
 					case GOLD_COIN:
-						delete Tile_array.data()[i];
-						Tile_array.array_splice(i, 1);
+						delete Room_array.data()[currentRoom]->data()[i];
+						Room_array.data()[currentRoom]->array_splice(i, 1);
 						this->collectCoin(1);
 						Audio.playSFX(SFX_COLLECT_COIN, 1);
 					break;
@@ -61,8 +63,8 @@ void Player::update(SDL_Audio &Audio, int gameFrame) {
 }
 
 int Player::playerCheckVertBoundries(float your_x, float your_y, float your_width, float your_height) {
-	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (tools::checkVertBounds(your_x, your_y, your_width, your_height, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height) && Tile_array.data()[i]->colidable == true) {
+	for (size_t i = 0; i < Room_array.data()[currentRoom]->length(); i++) {
+		if (tools::checkVertBounds(your_x, your_y, your_width, your_height, Room_array.data()[currentRoom]->data()[i]->x, Room_array.data()[currentRoom]->data()[i]->y, Room_array.data()[currentRoom]->data()[i]->width, Room_array.data()[currentRoom]->data()[i]->height) && Room_array.data()[currentRoom]->data()[i]->colidable == true) {
 			return i;//the wall you intersected with
 		}
 	}
@@ -70,9 +72,9 @@ int Player::playerCheckVertBoundries(float your_x, float your_y, float your_widt
 }
 
 int Player::playerCheckHorizBoundries(float your_x, float your_y, float your_width, float your_height, bool mustColide) {
-	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (tools::checkHorizBounds(your_x, your_y, your_width, your_height, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (mustColide == true && Tile_array.data()[i]->colidable == true) {
+	for (size_t i = 0; i < Room_array.data()[currentRoom]->length(); i++) {
+		if (tools::checkHorizBounds(your_x, your_y, your_width, your_height, Room_array.data()[currentRoom]->data()[i]->x, Room_array.data()[currentRoom]->data()[i]->y, Room_array.data()[currentRoom]->data()[i]->width, Room_array.data()[currentRoom]->data()[i]->height)) {
+			if (mustColide == true && Room_array.data()[currentRoom]->data()[i]->colidable == true) {
 				return i;//the wall you intersected with
 			} else if (mustColide == false) {
 				return i;
@@ -305,7 +307,7 @@ void Player::draw(SDL_Screen &Scene, int gameFrame) {
 	}
 }
 
-inline void Player::userGroundPound(SDL_Audio &Audio) {
+void Player::userGroundPound(SDL_Audio &Audio) {
 	if (!isTouchingGround) {
 		this->vertVect = -10;
 		this->playerGroundState = FALLING;
@@ -367,25 +369,25 @@ void Player::calcVertPhysics(SDL_Audio &Audio, int gameFrame) {
 			}
 			this->playerGroundState = STANDING;
 			this->moveState = NORMAL;
-			for (size_t i = 0; i < Tile_array.length(); i++) {
-				if (tools::checkVertBounds(this->x, this->y - this->vertVect, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-					if ((Tile_array.data()[i]->colidable && this->moveDir != UP && !Tile_array.data()[i]->semisolid) || (Tile_array.data()[i]->semisolid && this->y + (float)this->hitboxHeight <= Tile_array.data()[i]->y) ) {
+			for (size_t i = 0; i < Room_array.data()[currentRoom]->length(); i++) {
+				if (tools::checkVertBounds(this->x, this->y - this->vertVect, this->hitboxWidth, this->hitboxHeight, Room_array.data()[currentRoom]->data()[i]->x, Room_array.data()[currentRoom]->data()[i]->y, Room_array.data()[currentRoom]->data()[i]->width, Room_array.data()[currentRoom]->data()[i]->height)) {
+					if ((Room_array.data()[currentRoom]->data()[i]->colidable && this->moveDir != UP && !Room_array.data()[currentRoom]->data()[i]->semisolid) || (Room_array.data()[currentRoom]->data()[i]->semisolid && this->y + (float)this->hitboxHeight <= Room_array.data()[currentRoom]->data()[i]->y) ) {
 						this->moveState = NORMAL;
 						this->vertVect = 0;
-						this->y = Tile_array.data()[i]->y - this->hitboxHeight;
+						this->y = Room_array.data()[currentRoom]->data()[i]->y - this->hitboxHeight;
 						break;
-					} else if (Tile_array.data()[i]->ladder) {
+					} else if (Room_array.data()[currentRoom]->data()[i]->ladder) {
 						this->moveState = CLIMB;
 						break;
 					}
 				}
 			}
-			for (size_t i = 0; i < Tile_array.length(); i++) {
-				if (tools::checkVertBounds(this->x, this->y - vertVect - 1, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-					if (Tile_array.data()[i]->colidable && !Tile_array.data()[i]->semisolid) {
+			for (size_t i = 0; i < Room_array.data()[currentRoom]->length(); i++) {
+				if (tools::checkVertBounds(this->x, this->y - this->vertVect, this->hitboxWidth, this->hitboxHeight, Room_array.data()[currentRoom]->data()[i]->x, Room_array.data()[currentRoom]->data()[i]->y, Room_array.data()[currentRoom]->data()[i]->width, Room_array.data()[currentRoom]->data()[i]->height)) {
+					if (Room_array.data()[currentRoom]->data()[i]->colidable && !Room_array.data()[currentRoom]->data()[i]->semisolid) {
 						this->vertVect = 0;
 						this->animState = ANIM_CLIMB_STILL;
-						this->y = Tile_array.data()[i]->y + Tile_array.data()[i]->height;
+						this->y = Room_array.data()[currentRoom]->data()[i]->y + Room_array.data()[currentRoom]->data()[i]->height;
 						break;
 					}
 				}
@@ -401,13 +403,13 @@ void Player::calcVertPhysics(SDL_Audio &Audio, int gameFrame) {
 	}
 	
 	isTouchingGround = false;
-	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (tools::checkVertBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (Tile_array.data()[i]->colidable == true) {
+	for (size_t i = 0; i < Room_array.data()[currentRoom]->length(); i++) {
+		if (tools::checkVertBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight, Room_array.data()[currentRoom]->data()[i]->x, Room_array.data()[currentRoom]->data()[i]->y, Room_array.data()[currentRoom]->data()[i]->width, Room_array.data()[currentRoom]->data()[i]->height)) {
+			if (Room_array.data()[currentRoom]->data()[i]->colidable == true) {
 				if (playerGroundState == STANDING) {
-					if (!Tile_array.data()[i]->semisolid) {
+					if (!Room_array.data()[currentRoom]->data()[i]->semisolid) {
 						isTouchingGround = true;
-					} else if (Tile_array.data()[i]->semisolid && this->y + (float)this->hitboxHeight <= Tile_array.data()[i]->y) {
+					} else if (Room_array.data()[currentRoom]->data()[i]->semisolid && this->y + (float)this->hitboxHeight <= Room_array.data()[currentRoom]->data()[i]->y) {
 						isTouchingGround = true;
 					}
 				}
@@ -415,16 +417,16 @@ void Player::calcVertPhysics(SDL_Audio &Audio, int gameFrame) {
 		}
 	}
 	
-	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (tools::checkVertBounds(this->x, this->y - vertVect, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (Tile_array.data()[i]->colidable == true) {
+	for (size_t i = 0; i < Room_array.data()[currentRoom]->length(); i++) {
+		if (tools::checkVertBounds(this->x, this->y - vertVect, this->hitboxWidth, this->hitboxHeight, Room_array.data()[currentRoom]->data()[i]->x, Room_array.data()[currentRoom]->data()[i]->y, Room_array.data()[currentRoom]->data()[i]->width, Room_array.data()[currentRoom]->data()[i]->height)) {
+			if (Room_array.data()[currentRoom]->data()[i]->colidable == true) {
 				if (isTouchingGround == false && this->playerGroundState == FALLING) {
-					if (!Tile_array.data()[i]->semisolid || (Tile_array.data()[i]->semisolid && this->y + (float)this->hitboxHeight <= Tile_array.data()[i]->y)) {
+					if (!Room_array.data()[currentRoom]->data()[i]->semisolid || (Room_array.data()[currentRoom]->data()[i]->semisolid && this->y + (float)this->hitboxHeight <= Room_array.data()[currentRoom]->data()[i]->y)) {
 						if (vertVect <= -playerMaxVertSpeed*0.6 && horizVect == 0 && this->moveState == NORMAL) {
 							Audio.playSFX(SFX_LAND, 0);
 						}
 						this->vertVect = 0;
-						this->y = Tile_array.data()[i]->y - this->hitboxHeight;
+						this->y = Room_array.data()[currentRoom]->data()[i]->y - this->hitboxHeight;
 						this->playerGroundState = STANDING;
 						if (this->moveState == NORMAL) {
 							this->animState = ANIM_STAND;
@@ -432,11 +434,11 @@ void Player::calcVertPhysics(SDL_Audio &Audio, int gameFrame) {
 							this->animState = ANIM_BASH;
 						}
 						
-						if (Tile_array.data()[i]->breakable && this->moveState == GROUND_POUND && gameFrame - this->moveStartTime > 2) {
+						if (Room_array.data()[currentRoom]->data()[i]->breakable && this->moveState == GROUND_POUND && gameFrame - this->moveStartTime > 2) {
 							if (rand() % 2 == 0)
-								Tile_array.array_push(new PhysicsTile(Tile_array.data()[i]->x, Tile_array.data()[i]->y, GOLD_COIN));
-							delete Tile_array.data()[i];
-							Tile_array.array_splice(i, 1);
+								Room_array.data()[currentRoom]->array_push(new PhysicsTile(Room_array.data()[currentRoom]->data()[i]->x, Room_array.data()[currentRoom]->data()[i]->y, GOLD_COIN));
+							delete Room_array.data()[currentRoom]->data()[i];
+							Room_array.data()[currentRoom]->array_splice(i, 1);
 							Audio.playSFX(SFX_BREAK, 0);
 						}
 						this->isTouchingGround = true;
@@ -446,18 +448,18 @@ void Player::calcVertPhysics(SDL_Audio &Audio, int gameFrame) {
 		}
 	}
 	
-	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (tools::checkVertBounds(this->x, this->y - vertVect - 1, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (Tile_array.data()[i]->colidable == true) {
-				if (isTouchingGround == false && playerGroundState == JUMPING && !Tile_array.data()[i]->semisolid) {
-					this->y = Tile_array.data()[i]->y + Tile_array.data()[i]->height + 1;
-					Tile_array.data()[i]->tileVertVect = 0;
+	for (size_t i = 0; i < Room_array.data()[currentRoom]->length(); i++) {
+		if (tools::checkVertBounds(this->x, this->y - vertVect, this->hitboxWidth, this->hitboxHeight, Room_array.data()[currentRoom]->data()[i]->x, Room_array.data()[currentRoom]->data()[i]->y, Room_array.data()[currentRoom]->data()[i]->width, Room_array.data()[currentRoom]->data()[i]->height)) {
+			if (Room_array.data()[currentRoom]->data()[i]->colidable == true) {
+				if (isTouchingGround == false && playerGroundState == JUMPING && !Room_array.data()[currentRoom]->data()[i]->semisolid) {
+					this->y = Room_array.data()[currentRoom]->data()[i]->y + Room_array.data()[currentRoom]->data()[i]->height;
+					Room_array.data()[currentRoom]->data()[i]->tileVertVect = 0;
 					this->vertVect = 0;
-					if (Tile_array.data()[i]->breakable) {
+					if (Room_array.data()[currentRoom]->data()[i]->breakable) {
 						if (rand() % 2 == 0)
-							Tile_array.array_push(new PhysicsTile(Tile_array.data()[i]->x, Tile_array.data()[i]->y, GOLD_COIN));
-						delete Tile_array.data()[i];
-						Tile_array.array_splice(i, 1);
+							Room_array.data()[currentRoom]->array_push(new PhysicsTile(Room_array.data()[currentRoom]->data()[i]->x, Room_array.data()[currentRoom]->data()[i]->y, GOLD_COIN));
+						delete Room_array.data()[currentRoom]->data()[i];
+						Room_array.data()[currentRoom]->array_splice(i, 1);
 						Audio.playSFX(SFX_BREAK, 0);
 					}
 				}
@@ -468,11 +470,7 @@ void Player::calcVertPhysics(SDL_Audio &Audio, int gameFrame) {
 	this->y -= this->vertVect;
 	
 	
-	if (this->y > this->vertCameraOffsetOffset) {
-		cameraVertOffsetPx = -this->y + this->vertCameraOffsetOffset;
-	} else {
-		cameraVertOffsetPx = 0;
-	}
+	updateCameraVertOffset();
 }
 
 void Player::calcHorizPhysics(SDL_Audio &Audio, int gameFrame) {
@@ -500,8 +498,8 @@ void Player::calcHorizPhysics(SDL_Audio &Audio, int gameFrame) {
 	if (playerCheckHorizBoundries(this->x + horizVect, this->y, this->hitboxWidth, this->hitboxHeight, true) != -1) {
 		int intersectingTileId = playerCheckHorizBoundries(this->x + horizVect, this->y, this->hitboxWidth, this->hitboxHeight, true);
 		
-		if (horizVect > 0 && !Tile_array.data()[intersectingTileId]->semisolid) {
-			this->x = Tile_array.data()[intersectingTileId]->x - this->hitboxWidth;
+		if (horizVect > 0 && !Room_array.data()[currentRoom]->data()[intersectingTileId]->semisolid) {
+			this->x = Room_array.data()[currentRoom]->data()[intersectingTileId]->x - this->hitboxWidth;
 			if (this->moveState != SHOULDER_BASH) {
 				horizVect = 0;
 			} else if (this->moveState == SHOULDER_BASH) {
@@ -514,16 +512,16 @@ void Player::calcHorizPhysics(SDL_Audio &Audio, int gameFrame) {
 				this->moveState = NORMAL;
 				this->playerGroundState = JUMPING;
 				Audio.playSFX(SFX_BUMP, 0);
-				if (Tile_array.data()[intersectingTileId]->breakable) {
+				if (Room_array.data()[currentRoom]->data()[intersectingTileId]->breakable) {
 					if (rand() % 2 == 0)
-						Tile_array.array_push(new PhysicsTile(Tile_array.data()[intersectingTileId]->x, Tile_array.data()[intersectingTileId]->y, GOLD_COIN));
-					delete Tile_array.data()[intersectingTileId];
-					Tile_array.array_splice(intersectingTileId, 1);
+						Room_array.data()[currentRoom]->array_push(new PhysicsTile(Room_array.data()[currentRoom]->data()[intersectingTileId]->x, Room_array.data()[currentRoom]->data()[intersectingTileId]->y, GOLD_COIN));
+					delete Room_array.data()[currentRoom]->data()[intersectingTileId];
+					Room_array.data()[currentRoom]->array_splice(intersectingTileId, 1);
 					Audio.playSFX(SFX_BREAK, 1);
 				}
 			}
-		} else if (horizVect < 0 && !Tile_array.data()[intersectingTileId]->semisolid) {
-			this->x = Tile_array.data()[intersectingTileId]->x + Tile_array.data()[intersectingTileId]->width;
+		} else if (horizVect < 0 && !Room_array.data()[currentRoom]->data()[intersectingTileId]->semisolid) {
+			this->x = Room_array.data()[currentRoom]->data()[intersectingTileId]->x + Room_array.data()[currentRoom]->data()[intersectingTileId]->width;
 			if (this->moveState != SHOULDER_BASH) {
 				horizVect = 0;
 			} else if (this->moveState == SHOULDER_BASH) {
@@ -536,11 +534,11 @@ void Player::calcHorizPhysics(SDL_Audio &Audio, int gameFrame) {
 				this->moveState = NORMAL;
 				this->playerGroundState = JUMPING;
 				Audio.playSFX(SFX_BUMP, 0);
-				if (Tile_array.data()[intersectingTileId]->breakable) {
+				if (Room_array.data()[currentRoom]->data()[intersectingTileId]->breakable) {
 					if (rand() % 2 == 0)
-						Tile_array.array_push(new PhysicsTile(Tile_array.data()[intersectingTileId]->x, Tile_array.data()[intersectingTileId]->y, GOLD_COIN));
-					delete Tile_array.data()[intersectingTileId];
-					Tile_array.array_splice(intersectingTileId, 1);
+						Room_array.data()[currentRoom]->array_push(new PhysicsTile(Room_array.data()[currentRoom]->data()[intersectingTileId]->x, Room_array.data()[currentRoom]->data()[intersectingTileId]->y, GOLD_COIN));
+					delete Room_array.data()[currentRoom]->data()[intersectingTileId];
+					Room_array.data()[currentRoom]->array_splice(intersectingTileId, 1);
 					Audio.playSFX(SFX_BREAK, 1);
 				}
 			}
@@ -549,15 +547,10 @@ void Player::calcHorizPhysics(SDL_Audio &Audio, int gameFrame) {
 	
 	x += horizVect;
 	
-	if (this->x > 300) {
-		//cameraHorizOffsetPx -= horizVect;
-		cameraHorizOffsetPx = -this->x + 300;
-	} else {
-		cameraHorizOffsetPx = 0;
-	}
+	updateCameraHorizOffset();
 }
 
-inline void Player::userMoveHoriz(SDL_Audio &Audio) {
+void Player::userMoveHoriz(SDL_Audio &Audio) {
 	if (this->playerPressedMoveDir == NONE) {
 		if (this->horizVect > 0) {
 			this->horizVect += -this->playerDeceleration[isTouchingGround];
@@ -626,7 +619,7 @@ inline void Player::userMoveHoriz(SDL_Audio &Audio) {
 	}
 }
 
-inline void Player::calcShoulderBash(SDL_Audio &Audio, int gameFrame) {
+void Player::calcShoulderBash(SDL_Audio &Audio, int gameFrame) {
 	if (this->soundTimer >= 8) {
 		Audio.playSFX(SFX_DASH, 0);
 		this->soundTimer = 0;
@@ -707,22 +700,29 @@ int Player::getCoinCount(void) {
 	return this->coins;
 }
 
-inline void Player::enterDoor(void) {
+void Player::enterDoor(void) {
 	int ret = -1;
-	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (tools::checkHorizBounds(x, y, hitboxWidth, hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (Tile_array.data()[i]->getType() == TILE_DOOR) {
+	for (size_t i = 0; i < Room_array.data()[currentRoom]->length(); i++) {
+		if (tools::checkHorizBounds(x, y, hitboxWidth, hitboxHeight, Room_array.data()[currentRoom]->data()[i]->x, Room_array.data()[currentRoom]->data()[i]->y, Room_array.data()[currentRoom]->data()[i]->width, Room_array.data()[currentRoom]->data()[i]->height)) {
+			if (Room_array.data()[currentRoom]->data()[i]->getType() == TILE_DOOR) {
 				ret = i;
 				break;
 			}
 		}
 	}
-	if (ret != -1 && Tile_array.data()[ret]->getType() == TILE_DOOR && this->isTouchingGround == true) {
-		for (size_t i = 0; i < Tile_array.length(); i++) {
-			if (Tile_array.data()[i]->param1.warpId == Tile_array.data()[ret]->param2.destinationWarpId && this->moveState != SHOULDER_BASH && Tile_array.data()[i]->flags.warp) {
-				this->setXYPos(Tile_array.data()[i]->x + (Tile_array.data()[i]->width - this->hitboxWidth)/2, Tile_array.data()[i]->y + -this->hitboxHeight + 100);
-				this->vertVect = 0;
-				this->horizVect = 0;
+	if (ret != -1 && Room_array.data()[currentRoom]->data()[ret]->getType() == TILE_DOOR && this->isTouchingGround == true) {
+		for (size_t j = 0; j < Room_array.length(); j++) {
+			for (size_t i = 0; i < Room_array.data()[j]->length(); i++) {
+				if (Room_array.data()[j]->data()[i]->param1.warpId == Room_array.data()[currentRoom]->data()[ret]->param2.destinationWarpId && this->moveState != SHOULDER_BASH && Room_array.data()[j]->data()[i]->flags.warp && Room_array.data()[j]->data()[i]->roomId == Room_array.data()[currentRoom]->data()[ret]->param3.destinationRoomId) {
+					this->setCurrentRoomId(j);
+					this->setXYPos(Room_array.data()[j]->data()[i]->x + (Room_array.data()[j]->data()[i]->width - this->hitboxWidth)/2, Room_array.data()[j]->data()[i]->y + -this->hitboxHeight + 100);
+					this->vertVect = 0;
+					this->horizVect = 0;
+					// fixes for camera flicker
+					updateCameraVertOffset();
+					updateCameraHorizOffset();
+					return;
+				}
 			}
 		}
 	}
@@ -768,19 +768,19 @@ void Player::releaseDown(void) {
 	if (this->moveState == CROUCH) {
 		bool canColide = false;
 		releasingCrouch = true;
-		for (size_t i = 0; i < Tile_array.length(); i++) {
-			if (tools::checkVertBounds(this->x, this->y - 50, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-				if (Tile_array.data()[i]->colidable && !Tile_array.data()[i]->semisolid) {
+		for (size_t i = 0; i < Room_array.data()[currentRoom]->length(); i++) {
+			if (tools::checkVertBounds(this->x, this->y - 50, this->hitboxWidth, this->hitboxHeight, Room_array.data()[currentRoom]->data()[i]->x, Room_array.data()[currentRoom]->data()[i]->y, Room_array.data()[currentRoom]->data()[i]->width, Room_array.data()[currentRoom]->data()[i]->height)) {
+				if (Room_array.data()[currentRoom]->data()[i]->colidable && !Room_array.data()[currentRoom]->data()[i]->semisolid) {
 					canColide = true;
 					break;
 				}
 			}
 		}
 	
-		for (size_t i = 0; i < Tile_array.length(); i++) {
-			if (tools::checkVertBounds(this->x, this->y + this->hitboxHeight, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height) && !this->isTouchingGround) { // crappy solution to the floor glitch but idrk
-				if ((Tile_array.data()[i]->colidable && !Tile_array.data()[i]->semisolid) || (Tile_array.data()[i]->colidable && Tile_array.data()[i]->semisolid && this->y + (float)this->hitboxHeight <= Tile_array.data()[i]->y)) {
-					this->y = Tile_array.data()[i]->y - this->hitboxHeight;
+		for (size_t i = 0; i < Room_array.data()[currentRoom]->length(); i++) {
+			if (tools::checkVertBounds(this->x, this->y + this->hitboxHeight, this->hitboxWidth, this->hitboxHeight, Room_array.data()[currentRoom]->data()[i]->x, Room_array.data()[currentRoom]->data()[i]->y, Room_array.data()[currentRoom]->data()[i]->width, Room_array.data()[currentRoom]->data()[i]->height) && !this->isTouchingGround) { // crappy solution to the floor glitch but idrk
+				if ((Room_array.data()[currentRoom]->data()[i]->colidable && !Room_array.data()[currentRoom]->data()[i]->semisolid) || (Room_array.data()[currentRoom]->data()[i]->colidable && Room_array.data()[currentRoom]->data()[i]->semisolid && this->y + (float)this->hitboxHeight <= Room_array.data()[currentRoom]->data()[i]->y)) {
+					this->y = Room_array.data()[currentRoom]->data()[i]->y - this->hitboxHeight;
 					this->isTouchingGround = true;
 					break;
 				}
@@ -817,7 +817,7 @@ void Player::releaseUp(void) {
 	stopSwimDir(UP);
 } 
 
-inline void Player::userCrouch(SDL_Audio &Audio, int gameFrame) {
+void Player::userCrouch(SDL_Audio &Audio, int gameFrame) {
 	
 }
 
@@ -826,9 +826,9 @@ void Player::climbLadder(int dir) {
 		return;
 	if (this->moveState == CLIMB)
 		this->moveState = NORMAL;
-	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (tools::checkHorizBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (Tile_array.data()[i]->ladder) {
+	for (size_t i = 0; i < Room_array.data()[currentRoom]->length(); i++) {
+		if (tools::checkHorizBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight, Room_array.data()[currentRoom]->data()[i]->x, Room_array.data()[currentRoom]->data()[i]->y, Room_array.data()[currentRoom]->data()[i]->width, Room_array.data()[currentRoom]->data()[i]->height)) {
+			if (Room_array.data()[currentRoom]->data()[i]->ladder) {
 				this->moveDir = dir;
 				this->moveState = CLIMB;
 				if (dir != NONE)
@@ -846,11 +846,11 @@ void Player::enterLadder(void) { // is only run once to check if the player shou
 		return;
 	else if (this->moveState == CLIMB)
 		climbLadder(UP);
-	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (tools::checkHorizBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (Tile_array.data()[i]->ladder) {
+	for (size_t i = 0; i < Room_array.data()[currentRoom]->length(); i++) {
+		if (tools::checkHorizBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight, Room_array.data()[currentRoom]->data()[i]->x, Room_array.data()[currentRoom]->data()[i]->y, Room_array.data()[currentRoom]->data()[i]->width, Room_array.data()[currentRoom]->data()[i]->height)) {
+			if (Room_array.data()[currentRoom]->data()[i]->ladder) {
 				this->moveState = CLIMB;
-				this->x = Tile_array.data()[i]->x + (Tile_array.data()[i]->width - this->hitboxWidth)/2;
+				this->x = Room_array.data()[currentRoom]->data()[i]->x + (Room_array.data()[currentRoom]->data()[i]->width - this->hitboxWidth)/2;
 				this->animState = ANIM_CLIMB_STILL;
 				this->soundTimer = 0;
 				climbLadder(UP);
@@ -861,9 +861,9 @@ void Player::enterLadder(void) { // is only run once to check if the player shou
 }
 
 void Player::enterWater(SDL_Audio &Audio, int gameFrame) {
-	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (tools::checkHorizBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (Tile_array.data()[i]->flags.water) {
+	for (size_t i = 0; i < Room_array.data()[currentRoom]->length(); i++) {
+		if (tools::checkHorizBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight, Room_array.data()[currentRoom]->data()[i]->x, Room_array.data()[currentRoom]->data()[i]->y, Room_array.data()[currentRoom]->data()[i]->width, Room_array.data()[currentRoom]->data()[i]->height)) {
+			if (Room_array.data()[currentRoom]->data()[i]->flags.water) {
 				if (this->moveState == SWIM) {
 					
 					return;
@@ -907,9 +907,9 @@ void Player::swim(SDL_Audio &Audio, int gameFrame) {
 	bool intersectedWater = false;
 	bool floatingUp = false;
 	
-	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (tools::checkHorizBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight - 25, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (Tile_array.data()[i]->flags.water) {
+	for (size_t i = 0; i < Room_array.data()[currentRoom]->length(); i++) {
+		if (tools::checkHorizBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight - 25, Room_array.data()[currentRoom]->data()[i]->x, Room_array.data()[currentRoom]->data()[i]->y, Room_array.data()[currentRoom]->data()[i]->width, Room_array.data()[currentRoom]->data()[i]->height)) {
+			if (Room_array.data()[currentRoom]->data()[i]->flags.water) {
 				if (this->moveState == SWIM) {
 					
 					intersectedWater = true;
@@ -920,9 +920,9 @@ void Player::swim(SDL_Audio &Audio, int gameFrame) {
 	}
 	
 	
-	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (tools::checkHorizBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (Tile_array.data()[i]->flags.water && !jumpingOutOfWater) {
+	for (size_t i = 0; i < Room_array.data()[currentRoom]->length(); i++) {
+		if (tools::checkHorizBounds(this->x, this->y, this->hitboxWidth, this->hitboxHeight, Room_array.data()[currentRoom]->data()[i]->x, Room_array.data()[currentRoom]->data()[i]->y, Room_array.data()[currentRoom]->data()[i]->width, Room_array.data()[currentRoom]->data()[i]->height)) {
+			if (Room_array.data()[currentRoom]->data()[i]->flags.water && !jumpingOutOfWater) {
 				switch (this->moveDir) {
 					case UP:
 						if (intersectedWater) {
@@ -1040,17 +1040,17 @@ void Player::jumpOutOfWater(void) {
 		return;
 	const int jumpOutOfWaterForce = 8;
 	
-	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (tools::checkHorizBounds(this->x, this->y - 28, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (Tile_array.data()[i]->flags.water) {
+	for (size_t i = 0; i < Room_array.data()[currentRoom]->length(); i++) {
+		if (tools::checkHorizBounds(this->x, this->y - 28, this->hitboxWidth, this->hitboxHeight, Room_array.data()[currentRoom]->data()[i]->x, Room_array.data()[currentRoom]->data()[i]->y, Room_array.data()[currentRoom]->data()[i]->width, Room_array.data()[currentRoom]->data()[i]->height)) {
+			if (Room_array.data()[currentRoom]->data()[i]->flags.water) {
 				return;
 			}
 		}
 	}
 	
-	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (tools::checkVertBounds(this->x, this->y - 50, this->hitboxWidth, this->hitboxHeight, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (Tile_array.data()[i]->colidable && !Tile_array.data()[i]->semisolid) {
+	for (size_t i = 0; i < Room_array.data()[currentRoom]->length(); i++) {
+		if (tools::checkVertBounds(this->x, this->y - 50, this->hitboxWidth, this->hitboxHeight, Room_array.data()[currentRoom]->data()[i]->x, Room_array.data()[currentRoom]->data()[i]->y, Room_array.data()[currentRoom]->data()[i]->width, Room_array.data()[currentRoom]->data()[i]->height)) {
+			if (Room_array.data()[currentRoom]->data()[i]->colidable && !Room_array.data()[currentRoom]->data()[i]->semisolid) {
 				return;
 			}
 		}
@@ -1059,4 +1059,28 @@ void Player::jumpOutOfWater(void) {
 	
 	this->jumpingOutOfWater = true;
 	this->vertVect = jumpOutOfWaterForce;
+}
+
+void Player::setCurrentRoomId(int roomId) {
+	this->currentRoom = roomId;
+}
+
+int Player::getCurrentRoomId(void) {
+	return this->currentRoom;
+}
+
+void Player::updateCameraVertOffset(void) {
+	if (this->y > this->vertCameraOffsetOffset) {
+		cameraVertOffsetPx = -this->y + this->vertCameraOffsetOffset;
+	} else {
+		cameraVertOffsetPx = 0;
+	}
+}
+
+void Player::updateCameraHorizOffset(void) {
+	if (this->x > 300) {
+		cameraHorizOffsetPx = -this->x + 300;
+	} else {
+		cameraHorizOffsetPx = 0;
+	}
 }

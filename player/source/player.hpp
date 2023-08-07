@@ -27,6 +27,8 @@ public:
 	void releaseDown(void);
 	void pressUp(SDL_Audio &Audio, int gameFrame);
 	void releaseUp(void);
+	void setCurrentRoomId(int roomId);
+	int getCurrentRoomId(void);
 private:
 	float x, y, horizVect, vertVect;
 	int hitboxWidth, hitboxHeight, spriteWidth, spriteHeight, horizSpriteOffset, vertSpriteOffset, animTimer, animDelay, animState, prevAnimState, animDirection, moveStartTime, moveState;
@@ -48,17 +50,18 @@ private:
 	int soundTimer = 0;
 	int vertCameraOffsetOffset = 250; //it's the offset of the offset!!!
 	int moveDir = NONE;
+	int currentRoom = 0;
 	
 	void calcVertPhysics(SDL_Audio &Audio, int gameFrame);
 	void calcHorizPhysics(SDL_Audio &Audio, int gameFrame);
 	int playerCheckVertBoundries(float your_x, float your_y, float your_width, float your_height);
 	int playerCheckHorizBoundries(float your_x, float your_y, float your_width, float your_height, bool mustColide);
 	void collectCoin(int amount);
-	inline void userMoveHoriz(SDL_Audio &Audio);
-	inline void calcShoulderBash(SDL_Audio &Audio, int gameFrame);
-	inline void enterDoor(void);
-	inline void userCrouch(SDL_Audio &Audio, int gameFrame);
-	inline void userGroundPound(SDL_Audio &Audio);
+	void userMoveHoriz(SDL_Audio &Audio);
+	void calcShoulderBash(SDL_Audio &Audio, int gameFrame);
+	void enterDoor(void);
+	void userCrouch(SDL_Audio &Audio, int gameFrame);
+	void userGroundPound(SDL_Audio &Audio);
 	void climbLadder(int dir);
 	void enterLadder(void);
 	void enterWater(SDL_Audio &Audio, int gameFrame);
@@ -67,6 +70,8 @@ private:
 	void changeSwimDirection(int dir);
 	void stopSwimDir(int dir);
 	void jumpOutOfWater(void);
+	void updateCameraVertOffset(void);
+	void updateCameraHorizOffset(void);
 };
 
 enum GROUND_STATES {

@@ -22,6 +22,9 @@ Tile::Tile(int input_x, int input_y, int type) {
 	++tileCount;
 	this->animDelay = 9999999;
 	this->animTimer = 0;
+	this->param1.dummyVar = 0;
+	this->param2.dummyVar = 0;
+	this->param3.destinationRoomId = 0;
 	
 	switch (type) {
 		default:
@@ -82,6 +85,7 @@ void Tile::update(size_t frame, Player &player) {
 		case TILE_SPAWN_POINT:
 			if (frame == 0) {
 				player.setXYPos(this->x, this->y);
+				player.setCurrentRoomId(this->roomId);
 			}
 		break;
 	}
@@ -263,32 +267,34 @@ PhysicsTile::PhysicsTile(int input_x, int input_y, int type) : Tile(input_x, inp
 PhysicsTile::~PhysicsTile(void) {
 }
 
-extern SquishyArray <Tile*>Tile_array;
+extern SquishyArray <SquishyArray<Tile*>*>Room_array;
 
 void PhysicsTile::update(size_t frame, Player &player) {
 	bool tileTouchingGround = false;
-	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (tools::checkVertBounds(this->x, this->y - this->tileVertVect, this->width, this->height, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height) && Tile_array.data()[i]->tileId != this->tileId) {
-			if (Tile_array.data()[i]->colidable == true) {
-				if (!Tile_array.data()[i]->semisolid || (Tile_array.data()[i]->semisolid && this->y + (float)this->height <= Tile_array.data()[i]->y)) {
-					this->tileVertVect = -this->tileVertVect*this->elasticity;
-					this->y = Tile_array.data()[i]->y - this->height;
-					if (this->tileVertVect < 1 && this->tileVertVect > -1) {
-						this->tileVertVect = 0;
+	if (this->tileVertVect <= 0) { // there's a bug where when a tile hits the top of another tile, it will get teleported to the top of the other tile because it is thinking it is falling, therefore it SHOULD teleport it to the top. the problem is that i actually want it to not do that when it hits the bottom of the tile i want it to bounce off! this can be solved with movement states like i have done with the player already. ¡TODO!
+		for (size_t i = 0; i < Room_array.data()[player.getCurrentRoomId()]->length(); i++) {
+			if (tools::checkVertBounds(this->x, this->y - this->tileVertVect, this->width, this->height, Room_array.data()[player.getCurrentRoomId()]->data()[i]->x, Room_array.data()[player.getCurrentRoomId()]->data()[i]->y, Room_array.data()[player.getCurrentRoomId()]->data()[i]->width, Room_array.data()[player.getCurrentRoomId()]->data()[i]->height) && Room_array.data()[player.getCurrentRoomId()]->data()[i]->tileId != this->tileId) {
+				if (Room_array.data()[player.getCurrentRoomId()]->data()[i]->colidable == true) {
+					if (!Room_array.data()[player.getCurrentRoomId()]->data()[i]->semisolid || (Room_array.data()[player.getCurrentRoomId()]->data()[i]->semisolid && this->y + (float)this->height <= Room_array.data()[player.getCurrentRoomId()]->data()[i]->y)) {
+						this->tileVertVect = -this->tileVertVect*this->elasticity;
+						this->y = Room_array.data()[player.getCurrentRoomId()]->data()[i]->y - this->height;
+						if (this->tileVertVect < 1 && this->tileVertVect > -1) {
+							this->tileVertVect = 0;
+						}
+						tileTouchingGround = true;
 					}
-					tileTouchingGround = true;
 				}
 			}
 		}
-	}
-	
-	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (tools::checkVertBounds(this->x, this->y - this->tileVertVect - 1, this->width, this->height, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (Tile_array.data()[i]->colidable == true && Tile_array.data()[i]->tileId != this->tileId) {
-				if (!tileTouchingGround && !Tile_array.data()[i]->semisolid) {
-					//vertVect = -(Tile_array.data()[intersectingBottomForCeling]->y - this->y + Tile_array.data()[intersectingBottomForCeling]->height) - 1;
-					this->tileVertVect = 0;
-					this->y = Tile_array.data()[i]->y + Tile_array.data()[i]->height + 1;
+	} else {
+		for (size_t i = 0; i < Room_array.data()[player.getCurrentRoomId()]->length(); i++) {
+			if (tools::checkVertBounds(this->x, this->y - this->tileVertVect, this->width, this->height, Room_array.data()[player.getCurrentRoomId()]->data()[i]->x, Room_array.data()[player.getCurrentRoomId()]->data()[i]->y, Room_array.data()[player.getCurrentRoomId()]->data()[i]->width, Room_array.data()[player.getCurrentRoomId()]->data()[i]->height)) {
+				if (Room_array.data()[player.getCurrentRoomId()]->data()[i]->colidable == true && Room_array.data()[player.getCurrentRoomId()]->data()[i]->tileId != this->tileId) {
+					if (!tileTouchingGround && !Room_array.data()[player.getCurrentRoomId()]->data()[i]->semisolid) {
+						//vertVect = -(Room_array.data()[player.getCurrentRoomId()]->data()[intersectingBottomForCeling]->y - this->y + Room_array.data()[player.getCurrentRoomId()]->data()[intersectingBottomForCeling]->height) - 1;
+						this->tileVertVect = 0;
+						this->y = Room_array.data()[player.getCurrentRoomId()]->data()[i]->y + Room_array.data()[player.getCurrentRoomId()]->data()[i]->height;
+					}
 				}
 			}
 		}
@@ -307,16 +313,16 @@ void PhysicsTile::update(size_t frame, Player &player) {
 	if (this->tileHorizVect < this->tileDeceleration[tileTouchingGround] && this->tileHorizVect > -this->tileDeceleration[tileTouchingGround])
 		this->tileHorizVect = 0;
 	
-	for (size_t i = 0; i < Tile_array.length(); i++) {
-		if (tools::checkHorizBounds(this->x + this->tileHorizVect, this->y, this->width, this->height, Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->width, Tile_array.data()[i]->height)) {
-			if (this->tileHorizVect > 0 && !Tile_array.data()[i]->semisolid && Tile_array.data()[i]->colidable) {
-				//horizVect = Tile_array.data()[intersectingTileId]->x - this->x - this->hitboxWidth;
+	for (size_t i = 0; i < Room_array.data()[player.getCurrentRoomId()]->length(); i++) {
+		if (tools::checkHorizBounds(this->x + this->tileHorizVect, this->y, this->width, this->height, Room_array.data()[player.getCurrentRoomId()]->data()[i]->x, Room_array.data()[player.getCurrentRoomId()]->data()[i]->y, Room_array.data()[player.getCurrentRoomId()]->data()[i]->width, Room_array.data()[player.getCurrentRoomId()]->data()[i]->height)) {
+			if (this->tileHorizVect > 0 && !Room_array.data()[player.getCurrentRoomId()]->data()[i]->semisolid && Room_array.data()[player.getCurrentRoomId()]->data()[i]->colidable) {
+				//horizVect = Room_array.data()[player.getCurrentRoomId()]->data()[intersectingTileId]->x - this->x - this->hitboxWidth;
 				this->tileHorizVect = -this->tileHorizVect*this->elasticity;
-				this->x = Tile_array.data()[i]->x - this->width;
-			} else if (this->tileHorizVect < 0 && !Tile_array.data()[i]->semisolid && Tile_array.data()[i]->colidable) {
-				//horizVect = Tile_array.data()[intersectingTileId]->x + Tile_array.data()[intersectingTileId]->width - this->x;
+				this->x = Room_array.data()[player.getCurrentRoomId()]->data()[i]->x - this->width;
+			} else if (this->tileHorizVect < 0 && !Room_array.data()[player.getCurrentRoomId()]->data()[i]->semisolid && Room_array.data()[player.getCurrentRoomId()]->data()[i]->colidable) {
+				//horizVect = Room_array.data()[player.getCurrentRoomId()]->data()[intersectingTileId]->x + Room_array.data()[player.getCurrentRoomId()]->data()[intersectingTileId]->width - this->x;
 				this->tileHorizVect = -this->tileHorizVect*this->elasticity;
-				this->x = Tile_array.data()[i]->x + Tile_array.data()[i]->width;
+				this->x = Room_array.data()[player.getCurrentRoomId()]->data()[i]->x + Room_array.data()[player.getCurrentRoomId()]->data()[i]->width;
 			}
 		}
 	}

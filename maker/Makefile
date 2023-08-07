@@ -2,10 +2,10 @@
 
 # set the compiler flags
 PACKAGES := sdl2 SDL2_image SDL2_mixer SDL2_ttf
-CXXFLAGS := -std=c++20 -ggdb -gdwarf -Og -Wall -D_DEBUG
-CXXFLAGS += `pkg-config --cflags $(PACKAGES)`
-LDFLAGS := -mconsole -ggdb -gdwarf
-LDFLAGS += `pkg-config --libs $(PACKAGES)`
+CXXFLAGS := -std=c++20 -ggdb -gdwarf -Og -Wall
+CXXFLAGS += `pkg-config --cflags --static $(PACKAGES)`
+LDFLAGS := -ggdb -gdwarf -mconsole -static
+LDFLAGS += `pkg-config --libs --static $(PACKAGES)` -lgraphite2 -lfreetype -lsharpyuv
 # add header files here
 HDRS :=
 

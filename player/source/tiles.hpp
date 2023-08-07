@@ -24,6 +24,7 @@ public:
 		int dummyVar;
 	} param2;
 	union uparam3 {
+		int destinationRoomId;
 		int dummyVar;
 	} param3;
 	
@@ -49,6 +50,7 @@ public:
 	virtual void update(size_t frame, Player &player);
 	float tileVertVect = 0;
 	int tileId;
+	int roomId;
 protected:
 	int type;
 	int animTimer, animDelay;
@@ -66,6 +68,7 @@ private:
 	float elasticity = 0.5;
 	float tileHorizVect;
 	float tileDeceleration[2];
+	bool isVertStationary;
 };
 
 enum tileType {
@@ -111,5 +114,16 @@ struct s_level {
 	int param1;
 	int param2;
 	int param3;
+	char numThing[20];
+};
+
+struct s_level_2 {
+	int x;
+	int y;
+	int type;
+	int param1;
+	int param2;
+	int param3;
+	int roomId;
 	char numThing[20];
 };

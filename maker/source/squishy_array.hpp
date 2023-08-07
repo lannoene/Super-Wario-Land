@@ -32,7 +32,7 @@ public:
 		if (index > array_length || index + elements > array_length || index < 0 || index + elements < 0) {
 			return;
 		}
-		for (int i = index; i < array_length; i++) {
+		for (int i = index; i < array_length - elements; i++) {
 			array_ptr[i] = array_ptr[i + elements];
 		}
 		change_array_size(-elements);

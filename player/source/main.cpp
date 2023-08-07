@@ -2,7 +2,6 @@
 
 #include "titlescreen.hpp"
 
-gameScreen game;
 base* bptr;
 
 int main(int argc, char* argv[]) {

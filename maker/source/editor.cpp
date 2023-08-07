@@ -12,18 +12,27 @@
 
 float cameraHorizOffsetPx = 0;
 float cameraVertOffsetPx = 0;
-SquishyArray <Tile*>Tile_array(0);
+SquishyArray <SquishyArray<Tile*>*>Room_array(0);
+int currentRoom = 0;
+int maxRooms = 0;
 int currentTile = 0;
 bool mousePushed = false;
 bool mouseButton;
 int coord_click_x;
 int coord_click_y;
+bool hasChangedWithoutSaving = false;
+int gameFrame = 0;
 
 bool drawEditor(SDL_Screen &Scene) {
+	if (gameFrame == 0) {
+		Room_array.array_push(new SquishyArray <Tile*>(0));
+	}
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		switch(event.type) {
 			case SDL_QUIT:
+				if (hasChangedWithoutSaving && yesNoPopup(Scene, (char*)"Your level has unsaved changes. Save changes before exiting?"))
+					tools::saveLevel(Scene);
 				return false;
 			break;
 			case SDL_KEYDOWN:
@@ -45,33 +54,34 @@ bool drawEditor(SDL_Screen &Scene) {
 					break;
 					case SDL_SCANCODE_S: {
 						if((event.key.keysym.mod & SDLK_LCTRL)) {
-							puts("saving level:");
-							FILE *of = fopen("level.lvl", "wb");
-							fwrite("LVL1", 1, 4, of);
-							int times = 0;
-							for (int i = 0; i < Tile_array.length(); i++) {
-								++times;
-								char bruh[20];
-								printf("%d\n", times);
-								struct s_level levelStr = {Tile_array.data()[i]->x, Tile_array.data()[i]->y, Tile_array.data()[i]->getType(), Tile_array.data()[i]->param1.dummyVar, Tile_array.data()[i]->param2.dummyVar, Tile_array.data()[i]->param3.dummyVar};
-								snprintf(levelStr.numThing, 20, "%d", times);
-								fwrite(&levelStr, sizeof(struct s_level), 1, of);
-								fflush(of);
-							}
-							fclose(of);
-							puts("saved");
-							Scene.setTitle((char*)"Super Wario Land - Editor");
+							tools::saveLevel(Scene);
+							Scene.setTitle((char*)("Super Wario Land - Editor"));
+							hasChangedWithoutSaving = false;
 						}
 					}
 					break;
-					case SDL_SCANCODE_G://i could read lines and decode them seperately for different level types like (ground tile/enimies) maybe
+					case SDL_SCANCODE_G:
 						tools::resetLevel();
-						tools::decodeLevelFileIntoMemory("level.lvl");
+						tools::decodeLevelFileIntoMemory(textPopup(Scene, (char*)"Level file name").c_str());
 						Scene.setTitle((char*)"Super Wario Land - Editor");
+						hasChangedWithoutSaving = false;
 					break;
 					case SDL_SCANCODE_R:
 						tools::resetLevel();
 						Scene.setTitle((char*)"Super Wario Land - Editor");
+						hasChangedWithoutSaving = false;
+					break;
+					case SDL_SCANCODE_N:
+						Room_array.array_push(new SquishyArray <Tile*>(0));
+						puts("new area added");
+					break;
+					case SDL_SCANCODE_J:
+						if (currentRoom > 0)
+							--currentRoom;
+					break;
+					case SDL_SCANCODE_K:
+						if (currentRoom < Room_array.shortLen())
+							++currentRoom;
 					break;
 					default:
 					break;
@@ -81,40 +91,44 @@ bool drawEditor(SDL_Screen &Scene) {
 				coord_click_x = event.button.x;
 				coord_click_y = event.button.y;
 				if (SDL_BUTTON_LEFT == event.button.button) {
+					hasChangedWithoutSaving = true;
 					mousePushed = true;
 					mouseButton = LEFT;
-					Tile_array.array_push(new Tile((floor((coord_click_x - cameraHorizOffsetPx)/50)*50), floor((coord_click_y - cameraVertOffsetPx)/50)*50, currentTile));
-					Tile_array.data()[Tile_array.shortLen()]->param1.dummyVar = -9999;
-					Tile_array.data()[Tile_array.shortLen()]->param2.dummyVar = -9999;
-					Tile_array.data()[Tile_array.shortLen()]->param3.dummyVar = -9999;
+					Room_array.data()[currentRoom]->array_push(new Tile((floor((coord_click_x - cameraHorizOffsetPx)/50)*50), floor((coord_click_y - cameraVertOffsetPx)/50)*50, currentTile));
+					Room_array.data()[currentRoom]->data()[Room_array.data()[currentRoom]->shortLen()]->param1.dummyVar = -9999;
+					Room_array.data()[currentRoom]->data()[Room_array.data()[currentRoom]->shortLen()]->param2.dummyVar = -9999;
+					Room_array.data()[currentRoom]->data()[Room_array.data()[currentRoom]->shortLen()]->param3.dummyVar = -9999;
 					
 					switch (currentTile) {
 						case TILE_DOOR: {
 							mousePushed = false;
-							std::string tempDoorIdText = createPopup(Scene, (char*)"Enter door's warp id");
-							std::string tempDestDoorIdText = createPopup(Scene, (char*)"Enter destination warp id");
+							std::string tempDoorIdText = textPopup(Scene, (char*)"Enter door's warp id");
+							std::string tempDestDoorIdText = textPopup(Scene, (char*)"Enter destination warp id");
+							std::string tempDestRoomIdText = textPopup(Scene, (char*)"Enter destination room id");
 							
 							int stoiDoorId = 0;
 							int stoiDestDoorId = 0;
+							int stoiDestRoomId = 0;
 							try {
 								stoiDoorId = std::stoi(tempDoorIdText);
+								stoiDestDoorId = std::stoi(tempDestDoorIdText);
+								stoiDestRoomId = std::stoi(tempDestRoomIdText);
 							} catch (std::invalid_argument const&) {
 								std::cout << "Invalid number" << std::endl;
-								delete Tile_array.data()[Tile_array.shortLen()];
-								Tile_array.array_splice(Tile_array.shortLen(), 1);
+								delete Room_array.data()[currentRoom]->data()[Room_array.data()[currentRoom]->shortLen()];
+								Room_array.data()[currentRoom]->array_splice(Room_array.data()[currentRoom]->shortLen(), 1);
 								break;
 							}
 							
-							try {
-								stoiDestDoorId = std::stoi(tempDestDoorIdText);
-							} catch (std::invalid_argument const&) {
-								std::cout << "Invalid number" << std::endl;
-								delete Tile_array.data()[Tile_array.shortLen()];
-								Tile_array.array_splice(Tile_array.shortLen(), 1);
-								break;
+							if (stoiDoorId < 100 && stoiDestDoorId < 100) {
+								Room_array.data()[currentRoom]->data()[Room_array.data()[currentRoom]->shortLen()]->param1.warpId = stoiDoorId;
+								Room_array.data()[currentRoom]->data()[Room_array.data()[currentRoom]->shortLen()]->param2.destinationWarpId = stoiDestDoorId;
+								Room_array.data()[currentRoom]->data()[Room_array.data()[currentRoom]->shortLen()]->param3.destinationRoomId = stoiDestRoomId;
+							} else {
+								delete Room_array.data()[currentRoom]->data()[Room_array.data()[currentRoom]->shortLen()];
+								Room_array.data()[currentRoom]->array_splice(Room_array.data()[currentRoom]->shortLen(), 1);
+								std::cout << "Warp ids must be numbered below 100" << std::endl;
 							}
-							Tile_array.data()[Tile_array.shortLen()]->param1.warpId = stoiDoorId;
-							Tile_array.data()[Tile_array.shortLen()]->param2.destinationWarpId = stoiDestDoorId;
 						}
 						break;
 						case TILE_WARP_BLOCK: {
@@ -122,32 +136,38 @@ bool drawEditor(SDL_Screen &Scene) {
 							
 							int stoiWarpId = 0;
 							try {
-								stoiWarpId = std::stoi(createPopup(Scene, (char*)"Enter warp id"));
+								stoiWarpId = std::stoi(textPopup(Scene, (char*)"Enter warp id"));
 							} catch (std::invalid_argument const&) {
 								std::cout << "Invalid number" << std::endl;
-								delete Tile_array.data()[Tile_array.shortLen()];
-								Tile_array.array_splice(Tile_array.shortLen(), 1);
+								delete Room_array.data()[currentRoom]->data()[Room_array.data()[currentRoom]->shortLen()];
+								Room_array.data()[currentRoom]->array_splice(Room_array.data()[currentRoom]->shortLen(), 1);
 								break;
 							}
-							
-							Tile_array.data()[Tile_array.shortLen()]->param1.warpId = stoiWarpId;
+							if (stoiWarpId < 100)
+								Room_array.data()[currentRoom]->data()[Room_array.data()[currentRoom]->shortLen()]->param1.warpId = stoiWarpId;
+							else {
+								delete Room_array.data()[currentRoom]->data()[Room_array.data()[currentRoom]->shortLen()];
+								Room_array.data()[currentRoom]->array_splice(Room_array.data()[currentRoom]->shortLen(), 1);
+								std::cout << "Warp ids must be numbered below 100" << std::endl;
+							}
 						}
 						break;
 					}
-					
+					Scene.setTitle((char*)"*Super Wario Land - Editor");
 				}
 				if (SDL_BUTTON_RIGHT == event.button.button) {
 					mousePushed = true;
 					mouseButton = RIGHT;
-					for (int i = Tile_array.shortLen(); i >= 0; i--) {
-						if (Tile_array.data()[i]->x == floor(-cameraHorizOffsetPx + (coord_click_x/50)*50) && Tile_array.data()[i]->y == floor((coord_click_y - cameraVertOffsetPx)/50)*50) {
-							delete Tile_array.data()[i];
-							Tile_array.array_splice(i, 1);
+					for (int i = Room_array.data()[currentRoom]->shortLen(); i >= 0; i--) {
+						if (Room_array.data()[currentRoom]->data()[i]->x == floor(-cameraHorizOffsetPx + (coord_click_x/50)*50) && Room_array.data()[currentRoom]->data()[i]->y == floor((coord_click_y - cameraVertOffsetPx)/50)*50) {
+							hasChangedWithoutSaving = true;
+							delete Room_array.data()[currentRoom]->data()[i];
+							Room_array.data()[currentRoom]->array_splice(i, 1);
+							Scene.setTitle((char*)"*Super Wario Land - Editor");
 							break;
 						}
 					}
 				}
-				Scene.setTitle((char*)"*Super Wario Land - Editor");
 			}
 			break;
 			case SDL_MOUSEWHEEL: {
@@ -165,27 +185,31 @@ bool drawEditor(SDL_Screen &Scene) {
 					
 					bool tileThere = false;
 				
-					for (int i = Tile_array.shortLen(); i >= 0; i--) {
-						if (Tile_array.data()[i]->x == floor(-cameraHorizOffsetPx + (coord_click_x/50)*50) && Tile_array.data()[i]->y == floor((coord_click_y - cameraVertOffsetPx)/50)*50 && Tile_array.data()[i]->getType() == currentTile) {
+					for (int i = Room_array.data()[currentRoom]->shortLen(); i >= 0; i--) {
+						if (Room_array.data()[currentRoom]->data()[i]->x == floor(-cameraHorizOffsetPx + (coord_click_x/50)*50) && Room_array.data()[currentRoom]->data()[i]->y == floor((coord_click_y - cameraVertOffsetPx)/50)*50 && Room_array.data()[currentRoom]->data()[i]->getType() == currentTile) {
 							tileThere = true;
 							break;
 						}
 					}
 					
 					if (!tileThere && coord_click_x < 800 && coord_click_y < 600 && coord_click_x >= 0 && coord_click_y >= 0) {
-						Tile_array.array_push(new Tile((floor((coord_click_x - cameraHorizOffsetPx)/50)*50), floor((coord_click_y - cameraVertOffsetPx)/50)*50, currentTile));
-						Tile_array.data()[Tile_array.shortLen()]->param1.dummyVar = 0;
-						Tile_array.data()[Tile_array.shortLen()]->param2.dummyVar = 0;
-						Tile_array.data()[Tile_array.shortLen()]->param3.dummyVar = 0;
+						Room_array.data()[currentRoom]->array_push(new Tile((floor((coord_click_x - cameraHorizOffsetPx)/50)*50), floor((coord_click_y - cameraVertOffsetPx)/50)*50, currentTile));
+						Room_array.data()[currentRoom]->data()[Room_array.data()[currentRoom]->shortLen()]->param1.dummyVar = 0;
+						Room_array.data()[currentRoom]->data()[Room_array.data()[currentRoom]->shortLen()]->param2.dummyVar = 0;
+						Room_array.data()[currentRoom]->data()[Room_array.data()[currentRoom]->shortLen()]->param3.dummyVar = 0;
+						hasChangedWithoutSaving = true;
+						Scene.setTitle((char*)"*Super Wario Land - Editor");
 					}
 				} else if (mousePushed && mouseButton == RIGHT) {
 					coord_click_x += event.motion.xrel;
 					coord_click_y += event.motion.yrel;
 					
-					for (int i = Tile_array.shortLen(); i >= 0; i--) {
-						if (Tile_array.data()[i]->x == floor(-cameraHorizOffsetPx + (coord_click_x/50)*50) && Tile_array.data()[i]->y == floor((coord_click_y - cameraVertOffsetPx)/50)*50) {
-							delete Tile_array.data()[i];
-							Tile_array.array_splice(i, 1);
+					for (int i = Room_array.data()[currentRoom]->shortLen(); i >= 0; i--) {
+						if (Room_array.data()[currentRoom]->data()[i]->x == floor(-cameraHorizOffsetPx + (coord_click_x/50)*50) && Room_array.data()[currentRoom]->data()[i]->y == floor((coord_click_y - cameraVertOffsetPx)/50)*50) {
+							hasChangedWithoutSaving = true;
+							Scene.setTitle((char*)"*Super Wario Land - Editor");
+							delete Room_array.data()[currentRoom]->data()[i];
+							Room_array.data()[currentRoom]->array_splice(i, 1);
 							break;
 						}
 					}
@@ -206,8 +230,8 @@ bool drawEditor(SDL_Screen &Scene) {
 	Scene.drawImage(IMAGE_BG_LEVEL, (-floor(cameraHorizOffsetPx/1920 + 1)*1920 + cameraHorizOffsetPx), 0, 1920, 600);
 	Scene.drawImage(IMAGE_BG_LEVEL, (-floor(cameraHorizOffsetPx/1920 + 1)*1920 + cameraHorizOffsetPx) + 1920, 0, 1920, 600);
 	
-	for (int i = 0; i < Tile_array.length(); i++) {
-		Tile_array.data()[i]->draw(Scene);
+	for (int i = 0; i < Room_array.data()[currentRoom]->length(); i++) {
+		Room_array.data()[currentRoom]->data()[i]->draw(Scene);
 	}
 	
 	switch (currentTile) {
@@ -320,6 +344,8 @@ bool drawEditor(SDL_Screen &Scene) {
 	Scene.drawText(buffer, 0, 0, 30);
 	snprintf(buffer, 50, "Y: %f", -cameraVertOffsetPx);
 	Scene.drawText(buffer, 0, 30, 30);
+	snprintf(buffer, 50, "Current room: %d", currentRoom);
+	Scene.drawText(buffer, 0, 90, 30);
 	switch (currentTile) {
 		default:
 			snprintf(buffer, 50, "Current tile: %d (unknown)", currentTile);
@@ -428,5 +454,7 @@ bool drawEditor(SDL_Screen &Scene) {
 	
 	
 	Scene.finishDrawing();
+	
+	gameFrame++;
 	return true;
 }

@@ -24,6 +24,7 @@ public:
 		int dummyVar = 0;
 	} param2;
 	union param3 {
+		int destinationRoomId;
 		int dummyVar = 0;
 	} param3;
 	
@@ -79,5 +80,16 @@ struct s_level {
 	int param1;
 	int param2;
 	int param3;
+	char numThing[20];
+};
+
+struct s_level_2 {
+	int x;
+	int y;
+	int type;
+	int param1;
+	int param2;
+	int param3;
+	int roomId;
 	char numThing[20];
 };

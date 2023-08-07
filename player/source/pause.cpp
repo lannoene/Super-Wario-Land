@@ -1,6 +1,6 @@
 #include "pause.hpp"
 
-void pauseScreen(SDL_Screen &Scene, SDL_Audio &Audio) {
+bool pauseScreen(SDL_Screen &Scene, SDL_Audio &Audio) {
 	bool mousePushed = false;
 	int coord_click_x;
 	int coord_click_y;
@@ -10,14 +10,14 @@ void pauseScreen(SDL_Screen &Scene, SDL_Audio &Audio) {
 		while (SDL_PollEvent(&event)) {
 			switch(event.type) {
 				case SDL_QUIT:
-					//return "";
+					return false;
 				break;
 				case SDL_KEYDOWN:
 					switch (event.key.keysym.scancode) {
 						default:
 						break;
 						case SDL_SCANCODE_ESCAPE:
-							return;
+							return true;
 						break;
 						case SDL_SCANCODE_G:
 							if (Mix_Volume(-1, -1) == MIX_MAX_VOLUME) {
@@ -90,11 +90,12 @@ void pauseScreen(SDL_Screen &Scene, SDL_Audio &Audio) {
 		Scene.drawRectangle(0, 60, floatMusVol, 30, CLR_GRY);
 		
 		char buffer[50];
-		snprintf(buffer, 50, "SFX: %f", ((float)Mix_Volume(-1, -1)/128)*100);
+		snprintf(buffer, 50, "SFX: %d", (int)(((float)Mix_Volume(-1, -1)/128)*100));
 		Scene.drawText(buffer, 0, 30, 30);
 		
-		snprintf(buffer, 50, "Music: %f", ((float)Mix_VolumeMusic(-1)/128)*100);
+		snprintf(buffer, 50, "Music: %d", (int)(((float)Mix_VolumeMusic(-1)/128)*100));
 		Scene.drawText(buffer, 0, 60, 30);
 		Scene.finishDrawing();
 	}
+	return true;
 }

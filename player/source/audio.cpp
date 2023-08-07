@@ -22,6 +22,13 @@ SDL_Audio::SDL_Audio() {
 }
 
 SDL_Audio::~SDL_Audio() {
+	for (size_t i = 0; i < SDL_SFX_Array.length(); i++) {
+		Mix_FreeChunk(SDL_SFX_Array.data()[i]);
+	}
+	for (size_t i = 0; i < SDL_Music_Array.length(); i++) {
+		Mix_FreeMusic(SDL_Music_Array.data()[i]);
+	}
+	Mix_CloseAudio();
 	Mix_Quit();
 }
 

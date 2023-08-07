@@ -19,23 +19,13 @@ extern gameScreen game;
 extern bool showDebugInfo;
 extern int level;
 
-SquishyArray <Tile*>Tile_array(0);
+SquishyArray <SquishyArray<Tile*>*>Room_array(0);
 
 int gameFrame = 0;
 
 bool drawGame(SDL_Screen &Scene, SDL_Audio &Audio) {
+	
 	if (gameFrame == 0) {
-		switch (level) {
-			case 0:
-				tools::decodeLevelFileIntoMemory("level.lvl");
-			break;
-			case 1:
-				tools::decodeLevelFileIntoMemory("level1.lvl");
-			break;
-			case 2:
-				tools::decodeLevelFileIntoMemory("level2.lvl");
-			break;
-		}
 		Audio.playMusic(MUSIC_GRASS, -1);
 	}
 	
@@ -52,7 +42,8 @@ bool drawGame(SDL_Screen &Scene, SDL_Audio &Audio) {
 					case SDL_SCANCODE_ESCAPE:
 						wario.stopMoving(LEFT);
 						wario.stopMoving(RIGHT);
-						pauseScreen(Scene, Audio);
+						if (!pauseScreen(Scene, Audio))
+							return false;
 					break;
 					case SDL_SCANCODE_X:
 						wario.jump(Audio);
@@ -74,6 +65,14 @@ bool drawGame(SDL_Screen &Scene, SDL_Audio &Audio) {
 					break;
 					case SDL_SCANCODE_Z:
 						wario.shoulderBash(Audio, gameFrame);
+					break;
+					case SDL_SCANCODE_J:
+						if (wario.getCurrentRoomId() > 0)
+							wario.setCurrentRoomId(wario.getCurrentRoomId() - 1);
+					break;
+					case SDL_SCANCODE_K:
+						if (wario.getCurrentRoomId() < Room_array.shortLen())
+							wario.setCurrentRoomId(wario.getCurrentRoomId() + 1);
 					break;
 					default:
 					break;
@@ -109,9 +108,9 @@ bool drawGame(SDL_Screen &Scene, SDL_Audio &Audio) {
 	Scene.drawImage(IMAGE_BG_LEVEL, (-floor(cameraHorizOffsetPx/10/1920 + 1)*1920*10 + cameraHorizOffsetPx/10), 0, 1920, 600);
 	Scene.drawImage(IMAGE_BG_LEVEL, (-floor(cameraHorizOffsetPx/10/1920 + 1)*1920*10 + cameraHorizOffsetPx/10) + 1920*10, 0, 1920, 600);
 	
-	for (size_t i = 0; i < Tile_array.length(); i++) {
-		Tile_array.data()[i]->update((size_t)gameFrame, wario);
-		Tile_array.data()[i]->draw(Scene, gameFrame);
+	for (size_t i = 0; i < Room_array.data()[wario.getCurrentRoomId()]->length(); i++) {
+		Room_array.data()[wario.getCurrentRoomId()]->data()[i]->update((size_t)gameFrame, wario);
+		Room_array.data()[wario.getCurrentRoomId()]->data()[i]->draw(Scene, (size_t)gameFrame);
 	}
 	wario.update(Audio, gameFrame);
 	wario.draw(Scene, gameFrame);

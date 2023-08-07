@@ -5,7 +5,7 @@
 #include "draw.hpp"
 #include "audio.hpp"
 
-void pauseScreen(SDL_Screen &Scene, SDL_Audio &Audio);
+bool pauseScreen(SDL_Screen &Scene, SDL_Audio &Audio);
 
 enum BUTTON_IDS {
 	NO_BUTTON = 0,

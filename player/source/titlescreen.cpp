@@ -3,8 +3,8 @@
 #include "squishy_array.hpp"
 
 extern base* bptr;//really messy but i couldnt figure out how to not extern it & stuff
-extern gameScreen game;
-int level;
+mapScreen map;
+gameScreen gameScr; // just for testing before the map is finished
 
 bool drawTitlescreen(SDL_Screen &Scene) {
 	SDL_Event event;
@@ -21,16 +21,7 @@ bool drawTitlescreen(SDL_Screen &Scene) {
 						return false;
 					break;
 					case SDL_SCANCODE_SPACE:
-						bptr = &game;
-						level = 0;
-					break;
-					case SDL_SCANCODE_1:
-						bptr = &game;
-						level = 1;
-					break;
-					case SDL_SCANCODE_2:
-						bptr = &game;
-						level = 2;
+						bptr = &map;
 					break;
 				}
 			break;

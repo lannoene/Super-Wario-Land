@@ -4,4 +4,5 @@
 
 #include "screens.hpp"
 
-std::string createPopup(SDL_Screen &Scene, char* popupText);
+std::string textPopup(SDL_Screen &Scene, char* popupText);
+bool yesNoPopup(SDL_Screen &Scene, char* popupText);

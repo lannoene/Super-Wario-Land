@@ -59,7 +59,7 @@ private:
 	void collectCoin(int amount);
 	void userMoveHoriz(SDL_Audio &Audio);
 	void calcShoulderBash(SDL_Audio &Audio, int gameFrame);
-	void enterDoor(void);
+	void enterDoor(SDL_Audio &Audio);
 	void userCrouch(SDL_Audio &Audio, int gameFrame);
 	void userGroundPound(SDL_Audio &Audio);
 	void climbLadder(int dir);
@@ -72,6 +72,7 @@ private:
 	void jumpOutOfWater(void);
 	void updateCameraVertOffset(void);
 	void updateCameraHorizOffset(void);
+	inline void applyDefaultGravity(void);
 };
 
 enum GROUND_STATES {

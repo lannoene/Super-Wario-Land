@@ -1,38 +1,32 @@
 #include <fstream>
 
 #include "tiles.hpp"
-#include "titlescreen.hpp"
+#include "screens.hpp"
 #include "player.hpp"
 #include "squishy_array.hpp"
 #include "tools.hpp"
 #include "pause.hpp"
-#define TICKS_FOR_NEXT_FRAME (1000 / 1000)
+#include "room.hpp"
 
 Player wario;
+
+SquishyArray <Room*>Room_array(0);
 
 int lastTime = 0;
 float cameraHorizOffsetPx = 0;
 int cameraVertOffsetPx = 0;
 
-extern base* bptr;
-extern gameScreen game;
 extern bool showDebugInfo;
-extern int level;
-
-SquishyArray <SquishyArray<Tile*>*>Room_array(0);
 
 int gameFrame = 0;
 
 bool drawGame(SDL_Screen &Scene, SDL_Audio &Audio) {
 	
-	if (gameFrame == 0) {
-		Audio.playMusic(MUSIC_GRASS, -1);
-	}
-	
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		switch(event.type) {
 			case SDL_QUIT:
+				tools::resetLevel(Room_array);
 				return false;
 			break;
 			case SDL_KEYDOWN:
@@ -42,8 +36,9 @@ bool drawGame(SDL_Screen &Scene, SDL_Audio &Audio) {
 					case SDL_SCANCODE_ESCAPE:
 						wario.stopMoving(LEFT);
 						wario.stopMoving(RIGHT);
-						if (!pauseScreen(Scene, Audio))
-							return false;
+						if (Scene.isFullscreen())
+							Scene.showCursor(true);
+						changeScreen(SCR_PAUSE);
 					break;
 					case SDL_SCANCODE_X:
 						wario.jump(Audio);
@@ -73,6 +68,15 @@ bool drawGame(SDL_Screen &Scene, SDL_Audio &Audio) {
 					case SDL_SCANCODE_K:
 						if (wario.getCurrentRoomId() < Room_array.shortLen())
 							wario.setCurrentRoomId(wario.getCurrentRoomId() + 1);
+					break;
+					case SDL_SCANCODE_F11:
+						Scene.toggleWindowFullscreen();
+					break;
+					case SDL_SCANCODE_R:
+						/*tools::resetLevel(Room_array);
+						bptr = &mapScr;
+						gameFrame = 0;
+						return true;*/
 					break;
 					default:
 					break;
@@ -105,12 +109,14 @@ bool drawGame(SDL_Screen &Scene, SDL_Audio &Audio) {
 	}
 	
 	Scene.clearScreen();
-	Scene.drawImage(IMAGE_BG_LEVEL, (-floor(cameraHorizOffsetPx/10/1920 + 1)*1920*10 + cameraHorizOffsetPx/10), 0, 1920, 600);
-	Scene.drawImage(IMAGE_BG_LEVEL, (-floor(cameraHorizOffsetPx/10/1920 + 1)*1920*10 + cameraHorizOffsetPx/10) + 1920*10, 0, 1920, 600);
 	
-	for (size_t i = 0; i < Room_array.data()[wario.getCurrentRoomId()]->length(); i++) {
-		Room_array.data()[wario.getCurrentRoomId()]->data()[i]->update((size_t)gameFrame, wario);
-		Room_array.data()[wario.getCurrentRoomId()]->data()[i]->draw(Scene, (size_t)gameFrame);
+	Room_array.data()[wario.getCurrentRoomId()]->drawBackground(Scene, cameraHorizOffsetPx, cameraVertOffsetPx);
+	
+	for (size_t i = 0; i < Room_array.data()[wario.getCurrentRoomId()]->Room_tiles.length(); i++) { // update & draw current room's tiles
+		if (i < Room_array.data()[wario.getCurrentRoomId()]->Room_tiles.length())
+			Room_array.data()[wario.getCurrentRoomId()]->Room_tiles.data()[i]->update((size_t)gameFrame, wario);
+		if (i < Room_array.data()[wario.getCurrentRoomId()]->Room_tiles.length())
+			Room_array.data()[wario.getCurrentRoomId()]->Room_tiles.data()[i]->draw(Scene, (size_t)gameFrame);
 	}
 	wario.update(Audio, gameFrame);
 	wario.draw(Scene, gameFrame);
@@ -126,4 +132,34 @@ bool drawGame(SDL_Screen &Scene, SDL_Audio &Audio) {
 	gameFrame++;
 	
 	return true;
+}
+
+void loadLevel(std::string levelPath, SDL_Audio &Audio) {
+	tools::decodeLevelFileIntoMemory(levelPath, Room_array);
+	
+	int spawnPointTileId = 0;
+	int spawnPointTileRoom = 0;
+	
+	for (size_t j = 0; j < Room_array.length(); j++) {
+		for (size_t i = 0; i < Room_array.data()[j]->Room_tiles.length(); i++) {
+			if (Room_array.data()[j]->Room_tiles.data()[i]->getType() == TILE_SPAWN_POINT) {
+				spawnPointTileId = i;
+				spawnPointTileRoom = j;
+			}
+		}
+	}
+	
+	for (size_t i = 0; i < Room_array.data()[Room_array.data()[spawnPointTileRoom]->Room_tiles.data()[spawnPointTileId]->param3.destinationRoomId]->Room_tiles.length(); i++) {
+		if (Room_array.data()[Room_array.data()[spawnPointTileRoom]->Room_tiles.data()[spawnPointTileId]->param3.destinationRoomId]->Room_tiles.data()[i]->param1.warpId == Room_array.data()[spawnPointTileRoom]->Room_tiles.data()[spawnPointTileId]->param2.destinationWarpId && Room_array.data()[Room_array.data()[spawnPointTileRoom]->Room_tiles.data()[spawnPointTileId]->param3.destinationRoomId]->Room_tiles.data()[i]->flags.warp) {
+			wario.setCurrentRoomId(Room_array.data()[spawnPointTileRoom]->Room_tiles.data()[spawnPointTileId]->param3.destinationRoomId);
+			wario.setXYPos(Room_array.data()[Room_array.data()[spawnPointTileRoom]->Room_tiles.data()[spawnPointTileId]->param3.destinationRoomId]->Room_tiles.data()[i]->x, Room_array.data()[Room_array.data()[spawnPointTileRoom]->Room_tiles.data()[spawnPointTileId]->param3.destinationRoomId]->Room_tiles.data()[i]->y);
+			break;
+		}
+	}
+	Room_array.data()[wario.getCurrentRoomId()]->roomPlayBackgroundMusic(Audio);
+}
+
+void unloadCurrentLevel(SDL_Audio &Audio) {
+	tools::resetLevel(Room_array);
+	Audio.stopMusic();
 }

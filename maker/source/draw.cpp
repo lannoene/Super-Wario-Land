@@ -54,6 +54,21 @@ SDL_Screen::SDL_Screen() {
 	loadTexture((char*)"romfs/texture/grass/level_water_inside.png");
 	loadTexture((char*)"romfs/texture/grass/level_water_top1.png");
 	loadTexture((char*)"romfs/misc/warp_blk.png");
+	loadTexture((char*)"romfs/bg/cave_bg.png");
+	loadTexture((char*)"romfs/texture/cellar/cellar_ground_top.png");
+	loadTexture((char*)"romfs/texture/cellar/cellar_ground_top_right.png");
+	loadTexture((char*)"romfs/texture/cellar/cellar_ground_top_left.png");
+	loadTexture((char*)"romfs/texture/cellar/cellar_ground_middle_left.png");
+	loadTexture((char*)"romfs/texture/cellar/cellar_ground_middle_middle.png");
+	loadTexture((char*)"romfs/texture/cellar/cellar_ground_middle_right.png");
+	loadTexture((char*)"romfs/texture/cellar/cellar_ground_bottom_left.png");
+	loadTexture((char*)"romfs/texture/cellar/cellar_ground_bottom_middle.png");
+	loadTexture((char*)"romfs/texture/cellar/cellar_ground_bottom_right.png");
+	loadTexture((char*)"romfs/texture/cellar/cellar_ground_connector_top_to_right.png");
+	loadTexture((char*)"romfs/texture/cellar/cellar_ground_connector_top_to_left.png");
+	loadTexture((char*)"romfs/texture/cellar/cellar_ground_connector_bottom_to_right.png");
+	loadTexture((char*)"romfs/texture/cellar/cellar_ground_connector_bottom_to_left.png");
+	loadTexture((char*)"romfs/texture/cellar/cellar_decor_celeing_lamp.png");
 }
 
 SDL_Screen::~SDL_Screen() {
@@ -95,6 +110,8 @@ void SDL_Screen::finishDrawing(void) {
 void SDL_Screen::loadTexture(char* filePath) {
 	SDL_Surface* image_sur;
 	image_sur = IMG_Load(filePath);
+	if (image_sur == nullptr)
+		printf("could not load texture: %s\n", filePath);
 	SDL_Texture *t = SDL_CreateTextureFromSurface(rend, image_sur);
 	sdl_image.array_push(t);
 	SDL_FreeSurface(image_sur);
@@ -136,4 +153,55 @@ void SDL_Screen::drawRectangle(int x, int y, int width, int height, int color) {
 		break;
 	}
 	SDL_RenderFillRect(rend, &rect);
+}
+
+void SDL_Screen::drawLineRectangle(int x, int y, int width, int height, int color) {
+	SDL_Rect rect = {x, y, width, height};
+	switch (color) {
+		case CLR_BLU:
+			SDL_SetRenderDrawColor(rend, 0x00, 0x00, 0xff, SDL_ALPHA_OPAQUE);
+		break;
+		case CLR_WHT:
+			SDL_SetRenderDrawColor(rend, 0xff, 0xff, 0xff, SDL_ALPHA_OPAQUE);
+		break;
+		case CLR_RED:
+			SDL_SetRenderDrawColor(rend, 0xff, 0x00, 0x00, SDL_ALPHA_OPAQUE);
+		break;
+		case CLR_GRN:
+			SDL_SetRenderDrawColor(rend, 0x00, 0xff, 0x00, SDL_ALPHA_OPAQUE);
+		break;
+		case CLR_BLK:
+			SDL_SetRenderDrawColor(rend, 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
+		break;
+		case CLR_YLW:
+			SDL_SetRenderDrawColor(rend, 0xff, 0xff, 0x00, SDL_ALPHA_OPAQUE);
+		break;
+		case CLR_GRY:
+			SDL_SetRenderDrawColor(rend, 0x80, 0x80, 0x80, SDL_ALPHA_OPAQUE);
+		break;
+	}
+	SDL_RenderDrawRect(rend, &rect);
+}
+
+int SDL_Screen::imageWidth(int imageId) {
+	int x;
+	SDL_QueryTexture(sdl_image.data()[imageId], NULL, NULL, &x, NULL);
+	return x;
+}
+int SDL_Screen::imageHeight(int imageId) {
+	int y;
+	SDL_QueryTexture(sdl_image.data()[imageId], NULL, NULL, NULL, &y);
+	return y;
+}
+
+void SDL_Screen::toggleWindowFullscreen(void) {
+
+	if (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN) {
+		SDL_SetWindowFullscreen(window, 0);
+		SDL_ShowCursor(true);
+	} else {
+		SDL_ShowCursor(false);
+		SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
+	}
+
 }

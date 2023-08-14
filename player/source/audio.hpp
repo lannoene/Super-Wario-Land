@@ -11,7 +11,14 @@ public:
 	void playSFX(int audioId, int channel);
 	void loadMusic(char* filePath);
 	void playMusic(int musicId, int loopCount);
+	double getMusicPos(void);
+	void setMusicPos(double newPos);
+	double getCurrentMusicDuration(void);
+	void stopMusic(void);
 private:
+	SquishyArray <Mix_Chunk*>SDL_SFX_Array{0};
+	SquishyArray <Mix_Music*>SDL_Music_Array{0};
+	int musicCurrentlyPlaying = -1;
 };
 
 enum SFX_ID {
@@ -29,5 +36,7 @@ enum SFX_ID {
 };
 
 enum MUSIC_ID {
-	MUSIC_GRASS
+	MUSIC_GRASS = 0,
+	MUSIC_CELLAR,
+	MUSIC_VILLAGE,
 };

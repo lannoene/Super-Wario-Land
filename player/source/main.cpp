@@ -1,14 +1,11 @@
 #include <iostream>
 
-#include "titlescreen.hpp"
-
-base* bptr;
+#include "screens.hpp"
 
 int main(int argc, char* argv[]) {
-	SDL_Screen scene;
+	SDL_Screen Scene;
 	SDL_Audio Audio;
-	titleScreenThing tlScrn;
-	bptr = &tlScrn;
+	changeScreen(SCR_TITLE);
 	srand((unsigned)time(0));
 	
 	float base = 50;
@@ -20,10 +17,8 @@ int main(int argc, char* argv[]) {
 	std::cout << yourYcoord << std::endl;
 	
 	while (true) {
-		if (bptr->draw(scene, Audio) == false)
+		if (runScreen(Scene, Audio) == false)
 			break;
-		
-		
 	}
 	return 0;
 }

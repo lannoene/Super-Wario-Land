@@ -18,6 +18,10 @@ public:
 	void flipImage(int imageId);
 	void setTitle(char* title);
 	void drawRectangle(int x, int y, int width, int height, int color);
+	void drawLineRectangle(int x, int y, int width, int height, int color);
+	int imageWidth(int imageId);
+	int imageHeight(int imageId);
+	void toggleWindowFullscreen(void);
 private:
 	//window rend vars
 	SDL_Window *window = NULL;
@@ -72,6 +76,21 @@ enum imageNums {
 	IMAGE_TILE_WATER_MIDDLE,
 	IMAGE_TILE_WATER_TOP,
 	IMAGE_TILE_WARP_BLOCK,
+	IMAGE_BG_CAVE,
+	IMAGE_TILE_GROUND_CELLAR_TOP,
+	IMAGE_TILE_GROUND_CELLAR_TOP_RIGHT,
+	IMAGE_TILE_GROUND_CELLAR_TOP_LEFT,
+	IMAGE_TILE_GROUND_CELLAR_MIDDLE_LEFT,
+	IMAGE_TILE_GROUND_CELLAR_MIDDLE_MIDDLE,
+	IMAGE_TILE_GROUND_CELLAR_MIDDLE_RIGHT,
+	IMAGE_TILE_GROUND_CELLAR_BOTTOM_LEFT,
+	IMAGE_TILE_GROUND_CELLAR_BOTTOM_MIDDLE,
+	IMAGE_TILE_GROUND_CELLAR_BOTTOM_RIGHT,
+	IMAGE_TILE_GROUND_CELLAR_CONNECTOR_1,
+	IMAGE_TILE_GROUND_CELLAR_CONNECTOR_2,
+	IMAGE_TILE_GROUND_CELLAR_CONNECTOR_3,
+	IMAGE_TILE_GROUND_CELLAR_CONNECTOR_4,
+	IMAGE_TILE_DECOR_CELING_LAMP,
 };
 
 enum RECT_COLORS {

@@ -1,9 +1,11 @@
 #include "player.hpp"
 #include "tiles.hpp"
 #include "tools.hpp"
+#include "room.hpp"
 
 int tileCount = 0;
 extern int cameraVertOffsetPx;
+extern SquishyArray <Room*>Room_array;
 
 Tile::Tile(int input_x, int input_y, int type) {
 	this->x = input_x;
@@ -45,6 +47,7 @@ Tile::Tile(int input_x, int input_y, int type) {
 		case TILE_DIRT_BG:
 		case TILE_DIRT_BG_SHADOW:
 		case TILE_WATER_TOP:
+		case TILE_DECOR_CELING_LAMP:
 			this->colidable = false;
 			this->visible = true;
 		break;
@@ -79,13 +82,13 @@ int Tile::getType(void) {
 }
 
 void Tile::update(size_t frame, Player &player) {
+	// note: never mess with player roomId as a tile
 	switch (type) {
 		default:
 		break;
 		case TILE_SPAWN_POINT:
 			if (frame == 0) {
-				player.setXYPos(this->x, this->y);
-				player.setCurrentRoomId(this->roomId);
+
 			}
 		break;
 	}
@@ -97,6 +100,8 @@ void Tile::draw(SDL_Screen &Scene, int gameFrame) {
 	
 	if (gameFrame % this->animDelay == 0)
 		++this->animTimer;
+	
+	cameraHorizOffsetPx = std::floor(cameraHorizOffsetPx); // will get refreshed next cycle anyways
 	
 	switch (type) {
 		default:
@@ -212,6 +217,48 @@ void Tile::draw(SDL_Screen &Scene, int gameFrame) {
 				break;
 			}
 		break;
+		case TILE_GROUND_CELLAR_TOP:
+			Scene.drawImage(IMAGE_TILE_GROUND_CELLAR_TOP, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_GROUND_CELLAR_TOP_RIGHT:
+			Scene.drawImage(IMAGE_TILE_GROUND_CELLAR_TOP_RIGHT, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_GROUND_CELLAR_TOP_LEFT:
+			Scene.drawImage(IMAGE_TILE_GROUND_CELLAR_TOP_LEFT, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_GROUND_CELLAR_MIDDLE_LEFT:
+			Scene.drawImage(IMAGE_TILE_GROUND_CELLAR_MIDDLE_LEFT, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_GROUND_CELLAR_MIDDLE:
+			Scene.drawImage(IMAGE_TILE_GROUND_CELLAR_MIDDLE_MIDDLE, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_GROUND_CELLAR_MIDDLE_RIGHT:
+			Scene.drawImage(IMAGE_TILE_GROUND_CELLAR_MIDDLE_RIGHT, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_GROUND_CELLAR_BOTTOM_LEFT:
+			Scene.drawImage(IMAGE_TILE_GROUND_CELLAR_BOTTOM_LEFT, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_GROUND_CELLAR_BOTTOM_MIDDLE:
+			Scene.drawImage(IMAGE_TILE_GROUND_CELLAR_BOTTOM_MIDDLE, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_GROUND_CELLAR_BOTTOM_RIGHT:
+			Scene.drawImage(IMAGE_TILE_GROUND_CELLAR_BOTTOM_RIGHT, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_GROUND_CELLAR_CONNECTOR_TOP_TO_RIGHT:
+			Scene.drawImage(IMAGE_TILE_GROUND_CELLAR_CONNECTOR_1, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_GROUND_CELLAR_CONNECTOR_TOP_TO_LEFT:
+			Scene.drawImage(IMAGE_TILE_GROUND_CELLAR_CONNECTOR_2, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_GROUND_CELLAR_CONNECTOR_BOTTOM_TO_RIGHT:
+			Scene.drawImage(IMAGE_TILE_GROUND_CELLAR_CONNECTOR_3, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_GROUND_CELLAR_CONNECTOR_BOTTOM_TO_LEFT:
+			Scene.drawImage(IMAGE_TILE_GROUND_CELLAR_CONNECTOR_4, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
+		case TILE_DECOR_CELING_LAMP:
+			Scene.drawImage(IMAGE_TILE_DECOR_CELING_LAMP, x + cameraHorizOffsetPx, y + cameraVertOffsetPx, width, height);
+		break;
 	}
 }
 
@@ -225,6 +272,7 @@ PhysicsTile::PhysicsTile(int input_x, int input_y, int type) : Tile(input_x, inp
 	this->breakable = false;
 	this->colidable = false;
 	this->tileId = tileCount;
+	this->tileFallState = JUMPING;
 	++tileCount;
 	
 	switch (type) {
@@ -262,47 +310,62 @@ PhysicsTile::PhysicsTile(int input_x, int input_y, int type) : Tile(input_x, inp
 	}
 	tileDeceleration[false] = 0.02;
 	tileDeceleration[true] = 0.1;
+	this->tileVertVect = 0;
 }
 
 PhysicsTile::~PhysicsTile(void) {
 }
 
-extern SquishyArray <SquishyArray<Tile*>*>Room_array;
 
 void PhysicsTile::update(size_t frame, Player &player) {
 	bool tileTouchingGround = false;
-	if (this->tileVertVect <= 0) { // there's a bug where when a tile hits the top of another tile, it will get teleported to the top of the other tile because it is thinking it is falling, therefore it SHOULD teleport it to the top. the problem is that i actually want it to not do that when it hits the bottom of the tile i want it to bounce off! this can be solved with movement states like i have done with the player already. ¡TODO!
-		for (size_t i = 0; i < Room_array.data()[player.getCurrentRoomId()]->length(); i++) {
-			if (tools::checkVertBounds(this->x, this->y - this->tileVertVect, this->width, this->height, Room_array.data()[player.getCurrentRoomId()]->data()[i]->x, Room_array.data()[player.getCurrentRoomId()]->data()[i]->y, Room_array.data()[player.getCurrentRoomId()]->data()[i]->width, Room_array.data()[player.getCurrentRoomId()]->data()[i]->height) && Room_array.data()[player.getCurrentRoomId()]->data()[i]->tileId != this->tileId) {
-				if (Room_array.data()[player.getCurrentRoomId()]->data()[i]->colidable == true) {
-					if (!Room_array.data()[player.getCurrentRoomId()]->data()[i]->semisolid || (Room_array.data()[player.getCurrentRoomId()]->data()[i]->semisolid && this->y + (float)this->height <= Room_array.data()[player.getCurrentRoomId()]->data()[i]->y)) {
+	this->tileVertVect -= GRAVITY;
+	for (size_t i = 0; i < Room_array.data()[player.getCurrentRoomId()]->Room_tiles.length(); i++) {
+		if (tools::checkVertBounds(this->x, this->y - this->tileVertVect, this->width, this->height, Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->x, Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->y, Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->width, Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->height) && Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->tileId != this->tileId) {
+			if (Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->colidable == true) {
+				if (!Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->semisolid || (Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->semisolid && this->y + (float)this->height <= Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->y)) {
+					tileTouchingGround = true;
+				}
+			}
+		}
+	}
+	
+	
+	if (this->tileVertVect < 0) { // there's a bug where when a tile hits the top of another tile, it will get teleported to the top of the other tile because it is thinking it is falling, therefore it SHOULD teleport it to the top. the problem is that i actually want it to not do that when it hits the bottom of the tile i want it to bounce off! this can be solved with movement states like i have done with the player already. ¡TODO!
+		for (size_t i = 0; i < Room_array.data()[player.getCurrentRoomId()]->Room_tiles.length(); i++) {
+			if (tools::checkVertBounds(this->x, this->y - this->tileVertVect, this->width, this->height, Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->x, Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->y, Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->width, Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->height) && Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->tileId != this->tileId) {
+				if (Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->colidable == true) {
+					if (!Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->semisolid || (Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->semisolid && this->y + (float)this->height <= Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->y)) {
 						this->tileVertVect = -this->tileVertVect*this->elasticity;
-						this->y = Room_array.data()[player.getCurrentRoomId()]->data()[i]->y - this->height;
+						this->y = Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->y - this->height;
 						if (this->tileVertVect < 1 && this->tileVertVect > -1) {
 							this->tileVertVect = 0;
 						}
-						tileTouchingGround = true;
 					}
 				}
 			}
 		}
-	} else {
-		for (size_t i = 0; i < Room_array.data()[player.getCurrentRoomId()]->length(); i++) {
-			if (tools::checkVertBounds(this->x, this->y - this->tileVertVect, this->width, this->height, Room_array.data()[player.getCurrentRoomId()]->data()[i]->x, Room_array.data()[player.getCurrentRoomId()]->data()[i]->y, Room_array.data()[player.getCurrentRoomId()]->data()[i]->width, Room_array.data()[player.getCurrentRoomId()]->data()[i]->height)) {
-				if (Room_array.data()[player.getCurrentRoomId()]->data()[i]->colidable == true && Room_array.data()[player.getCurrentRoomId()]->data()[i]->tileId != this->tileId) {
-					if (!tileTouchingGround && !Room_array.data()[player.getCurrentRoomId()]->data()[i]->semisolid) {
-						//vertVect = -(Room_array.data()[player.getCurrentRoomId()]->data()[intersectingBottomForCeling]->y - this->y + Room_array.data()[player.getCurrentRoomId()]->data()[intersectingBottomForCeling]->height) - 1;
+	} else if (this->tileVertVect > 0 && !tileTouchingGround) {
+		for (size_t i = 0; i < Room_array.data()[player.getCurrentRoomId()]->Room_tiles.length(); i++) {
+			if (tools::checkVertBounds(this->x, this->y - this->tileVertVect, this->width, this->height, Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->x, Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->y, Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->width, Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->height)) {
+				if (Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->colidable == true && Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->tileId != this->tileId) {
+					if (!tileTouchingGround && !Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->semisolid) {
+						//vertVect = -(Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[intersectingBottomForCeling]->y - this->y + Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[intersectingBottomForCeling]->height) - 1;
 						this->tileVertVect = 0;
-						this->y = Room_array.data()[player.getCurrentRoomId()]->data()[i]->y + Room_array.data()[player.getCurrentRoomId()]->data()[i]->height;
+						this->y = Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->y + Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->height;
 					}
 				}
 			}
 		}
 	}
 	
-	if (!tileTouchingGround)
-		this->tileVertVect -= GRAVITY;
-	
+	if (this->tileVertVect > 0) {
+		this->tileFallState =JUMPING; 
+	} else if (this->tileVertVect < 0) {
+		this->tileFallState = FALLING;
+	} else if (tileTouchingGround) {
+		this->tileFallState = STANDING;
+	}
 	
 	
 	if (this->tileHorizVect > 0)
@@ -313,16 +376,16 @@ void PhysicsTile::update(size_t frame, Player &player) {
 	if (this->tileHorizVect < this->tileDeceleration[tileTouchingGround] && this->tileHorizVect > -this->tileDeceleration[tileTouchingGround])
 		this->tileHorizVect = 0;
 	
-	for (size_t i = 0; i < Room_array.data()[player.getCurrentRoomId()]->length(); i++) {
-		if (tools::checkHorizBounds(this->x + this->tileHorizVect, this->y, this->width, this->height, Room_array.data()[player.getCurrentRoomId()]->data()[i]->x, Room_array.data()[player.getCurrentRoomId()]->data()[i]->y, Room_array.data()[player.getCurrentRoomId()]->data()[i]->width, Room_array.data()[player.getCurrentRoomId()]->data()[i]->height)) {
-			if (this->tileHorizVect > 0 && !Room_array.data()[player.getCurrentRoomId()]->data()[i]->semisolid && Room_array.data()[player.getCurrentRoomId()]->data()[i]->colidable) {
-				//horizVect = Room_array.data()[player.getCurrentRoomId()]->data()[intersectingTileId]->x - this->x - this->hitboxWidth;
+	for (size_t i = 0; i < Room_array.data()[player.getCurrentRoomId()]->Room_tiles.length(); i++) {
+		if (tools::checkHorizBounds(this->x + this->tileHorizVect, this->y, this->width, this->height, Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->x, Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->y, Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->width, Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->height)) {
+			if (this->tileHorizVect > 0 && !Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->semisolid && Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->colidable) {
+				//horizVect = Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[intersectingTileId]->x - this->x - this->hitboxWidth;
 				this->tileHorizVect = -this->tileHorizVect*this->elasticity;
-				this->x = Room_array.data()[player.getCurrentRoomId()]->data()[i]->x - this->width;
-			} else if (this->tileHorizVect < 0 && !Room_array.data()[player.getCurrentRoomId()]->data()[i]->semisolid && Room_array.data()[player.getCurrentRoomId()]->data()[i]->colidable) {
-				//horizVect = Room_array.data()[player.getCurrentRoomId()]->data()[intersectingTileId]->x + Room_array.data()[player.getCurrentRoomId()]->data()[intersectingTileId]->width - this->x;
+				this->x = Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->x - this->width;
+			} else if (this->tileHorizVect < 0 && !Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->semisolid && Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->colidable) {
+				//horizVect = Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[intersectingTileId]->x + Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[intersectingTileId]->width - this->x;
 				this->tileHorizVect = -this->tileHorizVect*this->elasticity;
-				this->x = Room_array.data()[player.getCurrentRoomId()]->data()[i]->x + Room_array.data()[player.getCurrentRoomId()]->data()[i]->width;
+				this->x = Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->x + Room_array.data()[player.getCurrentRoomId()]->Room_tiles.data()[i]->width;
 			}
 		}
 	}

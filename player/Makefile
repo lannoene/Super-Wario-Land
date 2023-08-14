@@ -11,7 +11,7 @@ HDRS :=
 BUILDIR := build
 
 # add source files here
-SRCS := source/main.cpp source/draw.cpp source/titlescreen.cpp source/game.cpp source/player.cpp source/tiles.cpp source/tools.cpp source/audio.cpp source/pause.cpp source/map.cpp
+SRCS := source/main.cpp source/draw.cpp source/titlescreen.cpp source/game.cpp source/player.cpp source/tiles.cpp source/tools.cpp source/audio.cpp source/pause.cpp source/map.cpp source/room.cpp source/screens.cpp
 
 # generate names of object files
 OBJS := $(addprefix $(BUILDIR)/, $(SRCS:.cpp=.o))

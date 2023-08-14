@@ -1,10 +1,9 @@
 #include "map.hpp"
-#include "titlescreen.hpp"
-#include "tools.hpp"
+#include "screens.hpp"
+#include "game.hpp"
 
-extern base* bptr;
-gameScreen game;
 int level;
+extern int gameFrame;
 
 bool runMapScreen(SDL_Screen &Scene, SDL_Audio &Audio) {
 	SDL_Event event;
@@ -24,22 +23,26 @@ bool runMapScreen(SDL_Screen &Scene, SDL_Audio &Audio) {
 						--level;
 					break;
 					case SDL_SCANCODE_RETURN:
+						gameFrame = 0;
 						switch (level) {
 							default:
 							break;
-							case 0: // baking XDDD
-								tools::decodeLevelFileIntoMemory("level.lvl");
-								bptr = &game;
+							case 0: // funny loading
+								loadLevel("level1.lvl", Audio);
+								changeScreen(SCR_GAME);
 							break;
 							case 1:
-								tools::decodeLevelFileIntoMemory("level1.lvl");
-								bptr = &game;
+								loadLevel("level2.lvl", Audio);
+								changeScreen(SCR_GAME);
 							break;
 							case 2:
-								tools::decodeLevelFileIntoMemory("level2.lvl");
-								bptr = &game;
+								loadLevel("level3.lvl", Audio);
+								changeScreen(SCR_GAME);
 							break;
 						}
+					break;
+					case SDL_SCANCODE_F11:
+						Scene.toggleWindowFullscreen();
 					break;
 					default:
 					break;

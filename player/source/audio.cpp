@@ -1,8 +1,5 @@
 #include "audio.hpp"
 
-SquishyArray <Mix_Chunk*>SDL_SFX_Array(0);
-SquishyArray <Mix_Music*>SDL_Music_Array(0);
-
 SDL_Audio::SDL_Audio() {
 	Mix_Init(MIX_INIT_MP3 | MIX_INIT_OPUS | MIX_INIT_OGG);
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 6, 4096);
@@ -19,6 +16,8 @@ SDL_Audio::SDL_Audio() {
 	loadSFX((char*)"romfs/audio/sfx/land_in_water.wav");
 	loadSFX((char*)"romfs/audio/sfx/swimming.wav");
 	loadMusic((char*)"romfs/audio/bgm/bgm_grass.mp3");
+	loadMusic((char*)"romfs/audio/bgm/bgm_cellar.mp3");
+	loadMusic((char*)"romfs/audio/bgm/bgm_village.mp3");
 }
 
 SDL_Audio::~SDL_Audio() {
@@ -42,8 +41,28 @@ void SDL_Audio::playSFX(int audioId, int channel) {
 
 void SDL_Audio::loadMusic(char* filePath) {
 	SDL_Music_Array.array_push(Mix_LoadMUS(filePath));
+	if (SDL_Music_Array.data()[SDL_Music_Array.shortLen()] == NULL)
+		printf("Could not load music: %s", filePath);
 }
 
 void SDL_Audio::playMusic(int musicId, int loopCount) {
+	if (musicId != musicCurrentlyPlaying || !Mix_PlayingMusic())
 	Mix_PlayMusic(SDL_Music_Array.data()[musicId], loopCount);
+	musicCurrentlyPlaying = musicId;
+}
+
+double SDL_Audio::getMusicPos(void) {
+	return Mix_GetMusicPosition(SDL_Music_Array.data()[musicCurrentlyPlaying]);
+}
+
+void SDL_Audio::setMusicPos(double newPos) {
+	Mix_SetMusicPosition(newPos);
+}
+
+double SDL_Audio::getCurrentMusicDuration(void) {
+	return Mix_MusicDuration(SDL_Music_Array.data()[musicCurrentlyPlaying]);
+}
+
+void SDL_Audio::stopMusic(void) {
+	Mix_HaltMusic();
 }

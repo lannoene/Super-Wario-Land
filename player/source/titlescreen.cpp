@@ -1,10 +1,7 @@
 #include "titlescreen.hpp"
 #include "draw.hpp"
 #include "squishy_array.hpp"
-
-extern base* bptr;//really messy but i couldnt figure out how to not extern it & stuff
-mapScreen map;
-gameScreen gameScr; // just for testing before the map is finished
+#include "screens.hpp"
 
 bool drawTitlescreen(SDL_Screen &Scene) {
 	SDL_Event event;
@@ -21,7 +18,10 @@ bool drawTitlescreen(SDL_Screen &Scene) {
 						return false;
 					break;
 					case SDL_SCANCODE_SPACE:
-						bptr = &map;
+						changeScreen(SCR_MAP);
+					break;
+					case SDL_SCANCODE_F11:
+						Scene.toggleWindowFullscreen();
 					break;
 				}
 			break;

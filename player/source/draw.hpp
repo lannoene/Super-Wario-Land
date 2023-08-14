@@ -19,6 +19,12 @@ public:
 	void flipImage(int imageId);
 	void drawRectangle(int x, int y, int width, int height, int color);
 	void drawImageWithDir(int imageId, int x, int y, int width, int height, bool flip);
+	int imageWidth(int imageId);
+	int imageHeight(int imageId);
+	void toggleWindowFullscreen(void);
+	void showCursor(bool b_showCursor);
+	bool getCursorState(void);
+	bool isFullscreen(void);
 private:
 	//window rend vars
 	SDL_Window *window = NULL;
@@ -102,6 +108,21 @@ enum imageNums {
 	IMAGE_PLAYER_WARIO_SWIM_3,
 	IMAGE_PLAYER_WARIO_SWIM_4,
 	IMAGE_PLAYER_WARIO_SWIM_5,
+	IMAGE_BG_CAVE,
+	IMAGE_TILE_GROUND_CELLAR_TOP,
+	IMAGE_TILE_GROUND_CELLAR_TOP_RIGHT,
+	IMAGE_TILE_GROUND_CELLAR_TOP_LEFT,
+	IMAGE_TILE_GROUND_CELLAR_MIDDLE_LEFT,
+	IMAGE_TILE_GROUND_CELLAR_MIDDLE_MIDDLE,
+	IMAGE_TILE_GROUND_CELLAR_MIDDLE_RIGHT,
+	IMAGE_TILE_GROUND_CELLAR_BOTTOM_LEFT,
+	IMAGE_TILE_GROUND_CELLAR_BOTTOM_MIDDLE,
+	IMAGE_TILE_GROUND_CELLAR_BOTTOM_RIGHT,
+	IMAGE_TILE_GROUND_CELLAR_CONNECTOR_1,
+	IMAGE_TILE_GROUND_CELLAR_CONNECTOR_2,
+	IMAGE_TILE_GROUND_CELLAR_CONNECTOR_3,
+	IMAGE_TILE_GROUND_CELLAR_CONNECTOR_4,
+	IMAGE_TILE_DECOR_CELING_LAMP,
 };
 
 enum RECT_COLORS {

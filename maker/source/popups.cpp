@@ -30,7 +30,7 @@ std::string textPopup(SDL_Screen &Scene, char* popupText) {
 		if (inputText.length() > 0) {
 			Scene.drawText(inputText.data(), 0, 30, 30);
 		} else {
-			Scene.drawText("___", 5, 30, 30);
+			Scene.drawText((char*)"___", 5, 30, 30);
 		}
 		Scene.finishDrawing();
 	}
